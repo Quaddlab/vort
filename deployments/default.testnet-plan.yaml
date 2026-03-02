@@ -1,0 +1,60 @@
+---
+id: 0
+name: Testnet deployment
+network: testnet
+stacks-node: "https://stacks-node-api.testnet.stacks.co"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: sip-010-trait
+            expected-sender: STXP5BBW2034X3BR93PYKREGZ7KTJFKKATW6NZ4F
+            cost: 4370
+            path: contracts/traits/sip-010-trait.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: pt-token
+            expected-sender: STXP5BBW2034X3BR93PYKREGZ7KTJFKKATW6NZ4F
+            cost: 17730
+            path: contracts/pt-token.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: sbtc-token
+            expected-sender: STXP5BBW2034X3BR93PYKREGZ7KTJFKKATW6NZ4F
+            cost: 9780
+            path: contracts/sbtc-token.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: pt-amm
+            expected-sender: STXP5BBW2034X3BR93PYKREGZ7KTJFKKATW6NZ4F
+            cost: 43550
+            path: contracts/pt-amm.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: yt-token
+            expected-sender: STXP5BBW2034X3BR93PYKREGZ7KTJFKKATW6NZ4F
+            cost: 17450
+            path: contracts/yt-token.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: tokenizer
+            expected-sender: STXP5BBW2034X3BR93PYKREGZ7KTJFKKATW6NZ4F
+            cost: 35140
+            path: contracts/tokenizer.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: yield-router
+            expected-sender: STXP5BBW2034X3BR93PYKREGZ7KTJFKKATW6NZ4F
+            cost: 38110
+            path: contracts/yield-router.clar
+            anchor-block-only: true
+            clarity-version: 1
+      epoch: "2.05"
