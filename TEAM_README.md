@@ -34,6 +34,16 @@ The frontend is built with React, Next.js (App Router), and Tailwind CSS.
 - **`/src/lib/hiro.ts`**: The backend API layer that talks to the Hiro API. It fetches real-time Stacks blockchain data (like balances).
 - **`/src/hooks/useBalances.ts`**: A custom React hook that wraps the Hiro API. The dashboard pages use this to get the user's real sBTC, PT, and YT balances.
 
+### 🗄️ Backend Infrastructure & Database (Upstash Redis)
+
+Vort uses a lightweight serverless backend architecture to track global protocol metrics (like Total Value Locked) without needing a heavy SQL database.
+
+- **Upstash Redis (`/src/lib/kv.ts`)**: We use Upstash (a serverless Redis provider) as our database. It stores the **Global Protocol State** (e.g., TVL, total PT minted, total YT minted, current active epoch).
+  - _Note: We NEVER store user-specific balances in Redis. User balances are always fetched fresh from the blockchain via Hiro API._
+  - _Local Dev:_ If you don't have Upstash API keys in your `.env.local` file, `kv.ts` will automatically fall back to an in-memory mock state so your local app doesn't crash.
+- **Hiro Chainhooks (`/src/app/api/webhooks/chainhook/route.ts`)**: We use Chainhooks to "listen" to the Stacks blockchain. When a user deposits sBTC and our smart contract emits a `mint` event, Hiro sends a webhook POST request to our backend. Our backend receives this webhook and updates the global TVL and mint counts in our Upstash Redis database.
+- **Protocol API (`/src/app/api/protocol/route.ts`)**: Exposes the Redis global state to our frontend so the dashboard can display Total Value Locked and global yield metrics.
+
 ---
 
 ## 🚀 2. Local Development Setup
