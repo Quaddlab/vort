@@ -1,0 +1,504 @@
+error: Failed to lex input remainder: '
+;; Constant-product (x * y = k) with time-weighted price convergence to 1.0 at maturity
+
+(define-constant ERR-NOT-AUTHORIZED (err u401))
+(define-constant ERR-INVALID-AMOUNT (err u403))
+(define-constant ERR-INSUFFICIENT-LIQUIDITY (err u430))
+(define-constant ERR-SLIPPAGE-TOO-HIGH (err u431))
+(define-constant ERR-POOL-EMPTY (err u432))
+(define-constant CONTRACT-OWNER tx-sender)
+
+;; Pool reserves
+(define-data-var pool-sbtc uint u0)
+(define-data-var pool-pt uint u0)
+(define-data-var swap-fee-bps uint u30) ;; 0.3% fee
+
+;; Read-only: pool state
+(define-read-only (get-pool-info)
+  {
+    sbtc-reserve: (var-get pool-sbtc),
+    pt-reserve: (var-get pool-pt),
+    fee-bps: (var-get swap-fee-bps)
+  }
+)
+
+;; Read-only: PT price in sBTC (scaled by 1e8)
+(define-read-only (get-pt-price)
+  (let (
+    (sbtc-bal (var-get pool-sbtc))
+    (pt-bal (var-get pool-pt))
+  )
+    (if (> pt-bal u0)
+      (ok (/ (* sbtc-bal u100000000) pt-bal))
+      ERR-POOL-EMPTY
+    )
+  )
+)
+
+;; Swap sBTC -> PT
+(define-public (swap-sbtc-for-pt (sbtc-in uint) (min-pt-out uint))
+  (let (
+    (fee (/ (* sbtc-in (var-get swap-fee-bps)) u10000))
+    (sbtc-after-fee (- sbtc-in fee))
+    (sbtc-reserve (var-get pool-sbtc))
+    (pt-reserve (var-get pool-pt))
+    (k (* sbtc-reserve pt-reserve))
+    (new-sbtc-reserve (+ sbtc-reserve sbtc-after-fee))
+    (new-pt-reserve (/ k new-sbtc-reserve))
+    (pt-out (- pt-reserve new-pt-reserve))
+  )
+    (asserts! (> sbtc-in u0) ERR-INVALID-AMOUNT)
+    (asserts! (> pt-reserve u0) ERR-POOL-EMPTY)
+    (asserts! (>= pt-out min-pt-out) ERR-SLIPPAGE-TOO-HIGH)
+    (asserts! (> pt-out u0) ERR-INSUFFICIENT-LIQUIDITY)
+
+    ;; Transfer sBTC from user to pool
+    (try! (contract-call? .sbtc-token transfer sbtc-in tx-sender (as-contract tx-sender) none))
+
+    ;; Transfer PT from pool to user
+    (try! (as-contract (contract-call? .pt-token transfer pt-out tx-sender tx-sender none)))
+
+    ;; Update reserves
+    (var-set pool-sbtc new-sbtc-reserve)
+    (var-set pool-pt new-pt-reserve)
+
+    (print {event: "swap", direction: "sbtc-to-pt", sbtc-in: sbtc-in, pt-out: pt-out, fee: fee})
+    (ok {sbtc-in: sbtc-in, pt-out: pt-out, fee: fee})
+  )
+)
+
+;; Swap PT -> sBTC
+(define-public (swap-pt-for-sbtc (pt-in uint) (min-sbtc-out uint))
+  (let (
+    (fee-applied-pt (/ (* pt-in (var-get swap-fee-bps)) u10000))
+    (pt-after-fee (- pt-in fee-applied-pt))
+    (sbtc-reserve (var-get pool-sbtc))
+    (pt-reserve (var-get pool-pt))
+    (k (* sbtc-reserve pt-reserve))
+    (new-pt-reserve (+ pt-reserve pt-after-fee))
+    (new-sbtc-reserve (/ k new-pt-reserve))
+    (sbtc-out (- sbtc-reserve new-sbtc-reserve))
+  )
+    (asserts! (> pt-in u0) ERR-INVALID-AMOUNT)
+    (asserts! (> sbtc-reserve u0) ERR-POOL-EMPTY)
+    (asserts! (>= sbtc-out min-sbtc-out) ERR-SLIPPAGE-TOO-HIGH)
+    (asserts! (> sbtc-out u0) ERR-INSUFFICIENT-LIQUIDITY)
+
+    ;; Transfer PT from user to pool
+    (try! (contract-call? .pt-token transfer pt-in tx-sender (as-contract tx-sender) none))
+
+    ;; Transfer sBTC from pool to user
+    (try! (as-contract (contract-call? .sbtc-token transfer sbtc-out tx-sender tx-sender none)))
+
+    ;; Update reserves
+    (var-set pool-sbtc new-sbtc-reserve)
+    (var-set pool-pt new-pt-reserve)
+
+    (print {event: "swap", direction: "pt-to-sbtc", pt-in: pt-in, sbtc-out: sbtc-out})
+    (ok {pt-in: pt-in, sbtc-out: sbtc-out})
+  )
+)
+
+;; Admin: seed initial liquidity
+(define-public (add-liquidity (sbtc-amount uint) (pt-amount uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-NOT-AUTHORIZED)
+    (asserts! (> sbtc-amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (> pt-amount u0) ERR-INVALID-AMOUNT)
+
+    (try! (contract-call? .sbtc-token transfer sbtc-amount tx-sender (as-contract tx-sender) none))
+    (try! (contract-call? .pt-token transfer pt-amount tx-sender (as-contract tx-sender) none))
+
+    (var-set pool-sbtc (+ (var-get pool-sbtc) sbtc-amount))
+    (var-set pool-pt (+ (var-get pool-pt) pt-amount))
+
+    (print {event: "liquidity-added", sbtc: sbtc-amount, pt: pt-amount})
+    (ok true)
+  )
+)
+
+;; Admin: update swap fee
+(define-public (set-swap-fee (new-fee-bps uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-NOT-AUTHORIZED)
+    (asserts! (<= new-fee-bps u1000) ERR-INVALID-AMOUNT) ;; max 10%
+    (ok (var-set swap-fee-bps new-fee-bps))
+  )
+)
+'
+error: Failed to lex input remainder: '
+  (
+    (transfer (uint principal principal (optional (buff 34))) (response bool uint))
+    (get-name () (response (string-ascii 32) uint))
+    (get-symbol () (response (string-ascii 10) uint))
+    (get-decimals () (response uint uint))
+    (get-balance (principal) (response uint uint))
+    (get-total-supply () (response uint uint))
+    (get-token-uri () (response (optional (string-utf8 256)) uint))
+  )
+)
+'
+error: Failed to lex input remainder: '
+;; Deposit sBTC -> Mint equal PT + YT (1:1)
+;; Redeem PT + YT -> Return sBTC (only after maturity)
+
+(define-constant ERR-NOT-AUTHORIZED (err u401))
+(define-constant ERR-INVALID-AMOUNT (err u403))
+(define-constant ERR-EPOCH-NOT-MATURE (err u410))
+(define-constant ERR-INSUFFICIENT-BALANCE (err u411))
+(define-constant ERR-TRANSFER-FAILED (err u412))
+(define-constant CONTRACT-OWNER tx-sender)
+
+;; sBTC contract reference (update for testnet/mainnet)
+(define-constant SBTC-CONTRACT 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.sbtc-token)
+
+;; Epoch configuration
+(define-data-var epoch-id uint u120)
+(define-data-var epoch-start-block uint block-height)
+(define-data-var epoch-end-block uint (+ block-height u17280)) ;; ~120 days at 10min blocks
+(define-data-var total-deposits uint u0)
+(define-data-var paused bool false)
+
+;; Read-only: epoch state
+(define-read-only (get-epoch-info)
+  {
+    epoch-id: (var-get epoch-id),
+    start-block: (var-get epoch-start-block),
+    end-block: (var-get epoch-end-block),
+    total-deposits: (var-get total-deposits),
+    is-mature: (>= block-height (var-get epoch-end-block)),
+    blocks-remaining: (if (>= block-height (var-get epoch-end-block))
+                        u0
+                        (- (var-get epoch-end-block) block-height))
+  }
+)
+
+(define-read-only (is-epoch-mature)
+  (>= block-height (var-get epoch-end-block))
+)
+
+;; Deposit: transfer sBTC from user, mint PT + YT 1:1
+(define-public (deposit (amount uint))
+  (begin
+    (asserts! (not (var-get paused)) ERR-NOT-AUTHORIZED)
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (not (is-epoch-mature)) ERR-EPOCH-NOT-MATURE)
+
+    ;; Transfer sBTC from user to this contract
+    (try! (contract-call? .sbtc-token transfer amount tx-sender (as-contract tx-sender) none))
+
+    ;; Mint PT and YT 1:1
+    (try! (contract-call? .pt-token mint amount tx-sender))
+    (try! (contract-call? .yt-token mint amount tx-sender))
+
+    ;; Update total deposits
+    (var-set total-deposits (+ (var-get total-deposits) amount))
+
+    (print {event: "deposit", sender: tx-sender, amount: amount, epoch: (var-get epoch-id)})
+    (ok amount)
+  )
+)
+
+;; Redeem: burn PT + YT, return sBTC (only after maturity)
+(define-public (redeem (amount uint))
+  (begin
+    (asserts! (> amount u0) ERR-INVALID-AMOUNT)
+    (asserts! (is-epoch-mature) ERR-EPOCH-NOT-MATURE)
+
+    ;; Burn PT and YT from sender
+    (try! (contract-call? .pt-token burn amount tx-sender))
+    (try! (contract-call? .yt-token burn amount tx-sender))
+
+    ;; Return sBTC to user
+    (try! (as-contract (contract-call? .sbtc-token transfer amount tx-sender (get sender (unwrap-panic (get-caller-info))) none)))
+
+    ;; Update total deposits
+    (var-set total-deposits (- (var-get total-deposits) amount))
+
+    (print {event: "redeem", sender: tx-sender, amount: amount, epoch: (var-get epoch-id)})
+    (ok amount)
+  )
+)
+
+;; Helper to retrieve the original caller in as-contract context
+(define-private (get-caller-info)
+  (ok {sender: tx-sender})
+)
+
+;; Admin: pause/unpause (emergency only)
+(define-public (set-paused (new-state bool))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-NOT-AUTHORIZED)
+    (ok (var-set paused new-state))
+  )
+)
+
+;; Admin: configure epoch (only before deposits start)
+(define-public (configure-epoch (new-id uint) (start uint) (end uint))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-NOT-AUTHORIZED)
+    (asserts! (is-eq (var-get total-deposits) u0) ERR-NOT-AUTHORIZED)
+    (var-set epoch-id new-id)
+    (var-set epoch-start-block start)
+    (var-set epoch-end-block end)
+    (ok true)
+  )
+)
+'
+error: Failed to lex input remainder: '
+;; Manages yield from Zest Protocol, splits to YT holders/treasury/reserve
+
+(define-constant ERR-NOT-AUTHORIZED (err u401))
+(define-constant ERR-NO-YIELD (err u420))
+(define-constant ERR-ALREADY-CLAIMED (err u421))
+(define-constant ERR-EPOCH-NOT-MATURE (err u422))
+(define-constant CONTRACT-OWNER tx-sender)
+
+;; Yield split ratios (in basis points, total = 10000)
+(define-constant YIELD-TO-HOLDERS u9000)  ;; 90%
+(define-constant YIELD-TO-TREASURY u500)  ;; 5%
+(define-constant YIELD-TO-RESERVE u500)   ;; 5%
+
+;; State
+(define-data-var total-yield-accrued uint u0)
+(define-data-var total-yield-distributed uint u0)
+(define-data-var reserve-balance uint u0)
+(define-data-var treasury-address principal CONTRACT-OWNER)
+(define-data-var yield-per-token-stored uint u0)
+
+;; Per-user yield tracking
+(define-map user-yield-paid principal uint)
+(define-map user-yield-earned principal uint)
+
+;; Read-only: global yield state
+(define-read-only (get-yield-info)
+  {
+    total-accrued: (var-get total-yield-accrued),
+    total-distributed: (var-get total-yield-distributed),
+    reserve: (var-get reserve-balance),
+    yield-per-token: (var-get yield-per-token-stored)
+  }
+)
+
+;; Read-only: user's claimable yield
+(define-read-only (get-claimable-yield (user principal))
+  (let (
+    (yt-balance (unwrap-panic (contract-call? .yt-token get-balance user)))
+    (paid (default-to u0 (map-get? user-yield-paid user)))
+    (current-rate (var-get yield-per-token-stored))
+    (pending (/ (* yt-balance (- current-rate paid)) u1000000))
+    (earned (default-to u0 (map-get? user-yield-earned user)))
+  )
+    (+ pending earned)
+  )
+)
+
+;; Accrue yield - called when new yield arrives from Zest Protocol
+(define-public (accrue-yield (amount uint))
+  (let (
+    (total-yt (unwrap-panic (contract-call? .yt-token get-total-supply)))
+    (holder-share (/ (* amount YIELD-TO-HOLDERS) u10000))
+    (treasury-share (/ (* amount YIELD-TO-TREASURY) u10000))
+    (reserve-share (/ (* amount YIELD-TO-RESERVE) u10000))
+  )
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-NOT-AUTHORIZED)
+    (asserts! (> amount u0) ERR-NO-YIELD)
+
+    ;; Update yield-per-token for holder distribution
+    (if (> total-yt u0)
+      (var-set yield-per-token-stored
+        (+ (var-get yield-per-token-stored)
+           (/ (* holder-share u1000000) total-yt)))
+      false
+    )
+
+    ;; Update state
+    (var-set total-yield-accrued (+ (var-get total-yield-accrued) amount))
+    (var-set reserve-balance (+ (var-get reserve-balance) reserve-share))
+
+    ;; Transfer treasury share
+    (try! (as-contract
+      (contract-call? .sbtc-token transfer treasury-share tx-sender (var-get treasury-address) none)))
+
+    (print {event: "yield-accrued", amount: amount, holder-share: holder-share,
+            treasury-share: treasury-share, reserve-share: reserve-share})
+    (ok amount)
+  )
+)
+
+;; Claim yield - YT holders call this to collect accrued yield
+(define-public (claim-yield)
+  (let (
+    (claimable (get-claimable-yield tx-sender))
+    (current-rate (var-get yield-per-token-stored))
+  )
+    (asserts! (> claimable u0) ERR-NO-YIELD)
+
+    ;; Update user tracking
+    (map-set user-yield-paid tx-sender current-rate)
+    (map-set user-yield-earned tx-sender u0)
+
+    ;; Transfer yield to user
+    (try! (as-contract
+      (contract-call? .sbtc-token transfer claimable tx-sender tx-sender none)))
+
+    (var-set total-yield-distributed (+ (var-get total-yield-distributed) claimable))
+
+    (print {event: "yield-claimed", user: tx-sender, amount: claimable})
+    (ok claimable)
+  )
+)
+
+;; Admin: set treasury address
+(define-public (set-treasury (new-treasury principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-NOT-AUTHORIZED)
+    (ok (var-set treasury-address new-treasury))
+  )
+)
+'
+error: Failed to lex input remainder: '
+
+(define-fungible-token principal-token)
+
+(define-constant ERR-NOT-AUTHORIZED (err u401))
+(define-constant ERR-INSUFFICIENT-BALANCE (err u402))
+(define-constant CONTRACT-OWNER tx-sender)
+
+(define-data-var token-uri (optional (string-utf8 256)) (some u"https://vort.finance/metadata/pt"))
+
+;; Only the tokenizer contract can mint and burn
+(define-data-var authorized-minter principal CONTRACT-OWNER)
+
+(define-public (set-authorized-minter (new-minter principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-NOT-AUTHORIZED)
+    (ok (var-set authorized-minter new-minter))
+  )
+)
+
+(define-public (mint (amount uint) (recipient principal))
+  (begin
+    (asserts! (is-eq tx-sender (var-get authorized-minter)) ERR-NOT-AUTHORIZED)
+    (ft-mint? principal-token amount recipient)
+  )
+)
+
+(define-public (burn (amount uint) (sender principal))
+  (begin
+    (asserts! (is-eq tx-sender (var-get authorized-minter)) ERR-NOT-AUTHORIZED)
+    (ft-burn? principal-token amount sender)
+  )
+)
+
+(define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
+  (begin
+    (asserts! (is-eq tx-sender sender) ERR-NOT-AUTHORIZED)
+    (match memo m (print m) 0x)
+    (ft-transfer? principal-token amount sender recipient)
+  )
+)
+
+(define-read-only (get-name)
+  (ok "Vort Principal Token")
+)
+
+(define-read-only (get-symbol)
+  (ok "vPT")
+)
+
+(define-read-only (get-decimals)
+  (ok u8)
+)
+
+(define-read-only (get-balance (account principal))
+  (ok (ft-get-balance principal-token account))
+)
+
+(define-read-only (get-total-supply)
+  (ok (ft-get-supply principal-token))
+)
+
+(define-read-only (get-token-uri)
+  (ok (var-get token-uri))
+)
+'
+error: Failed to lex input remainder: '
+
+(define-fungible-token yield-token)
+
+(define-constant ERR-NOT-AUTHORIZED (err u401))
+(define-constant ERR-INSUFFICIENT-BALANCE (err u402))
+(define-constant CONTRACT-OWNER tx-sender)
+
+(define-data-var token-uri (optional (string-utf8 256)) (some u"https://vort.finance/metadata/yt"))
+
+(define-data-var authorized-minter principal CONTRACT-OWNER)
+
+(define-public (set-authorized-minter (new-minter principal))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-NOT-AUTHORIZED)
+    (ok (var-set authorized-minter new-minter))
+  )
+)
+
+(define-public (mint (amount uint) (recipient principal))
+  (begin
+    (asserts! (is-eq tx-sender (var-get authorized-minter)) ERR-NOT-AUTHORIZED)
+    (ft-mint? yield-token amount recipient)
+  )
+)
+
+(define-public (burn (amount uint) (sender principal))
+  (begin
+    (asserts! (is-eq tx-sender (var-get authorized-minter)) ERR-NOT-AUTHORIZED)
+    (ft-burn? yield-token amount sender)
+  )
+)
+
+(define-public (transfer (amount uint) (sender principal) (recipient principal) (memo (optional (buff 34))))
+  (begin
+    (asserts! (is-eq tx-sender sender) ERR-NOT-AUTHORIZED)
+    (match memo m (print m) 0x)
+    (ft-transfer? yield-token amount sender recipient)
+  )
+)
+
+(define-read-only (get-name)
+  (ok "Vort Yield Token")
+)
+
+(define-read-only (get-symbol)
+  (ok "vYT")
+)
+
+(define-read-only (get-decimals)
+  (ok u8)
+)
+
+(define-read-only (get-balance (account principal))
+  (ok (ft-get-balance yield-token account))
+)
+
+(define-read-only (get-total-supply)
+  (ok (ft-get-supply yield-token))
+)
+
+(define-read-only (get-token-uri)
+  (ok (var-get token-uri))
+)
+'
+x 6 errors detected
+
+----------------------------
+Hint: what's next?
+Once you are ready to write TypeScript unit tests for your contract, run the following command:
+
+  $ npm install
+  $ npm test
+    Run all run tests in the ./tests folder.
+
+Find more information on testing with Clarinet here: https://docs.hiro.so/stacks/clarinet-js-sdk
+These hints can be disabled in the ~/.clarinet/clarinetrc.toml file.
+  $ mkdir -p ~/.clarinet; echo "enable_hints = false" >> ~/.clarinet/clarinetrc.toml
+----------------------------

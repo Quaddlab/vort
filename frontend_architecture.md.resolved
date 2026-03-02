@@ -1,0 +1,41 @@
+# SplitBTC MVP Frontend & Serverless Architecture Strategy
+
+This document formalizes the agreed-upon architecture for the SplitBTC MVP frontend and its interaction with the Stacks blockchain. The approach heavily optimizes for shipping speed, robust user experience, and "Bank-Grade" security without the bloat of a traditional Web2 backend.
+
+## 1. The "Serverless" Backend Pivot
+To ship a robust MVP in 2-4 weeks, we are discarding the traditional Node.js + PostgreSQL backend model.
+- **The Engine:** Next.js 15 (App Router) acts as both the frontend client and the backend API via Server Actions and Route Handlers.
+- **The Indexer:** Hiro Chainhooks v2 will push on-chain events (Mints, Burns, Swaps) directly to a Next.js API endpoint.
+- **The State Layer:** The Next.js API will immediately write aggregated protocol state (e.g., Total TVL, Current Epoch Yield) to a blazing-fast KV Store (like Vercel KV/Redis).
+- **The Speed Advantage:** The frontend reads non-user-specific data (TVL, Epoch countdown, PT Price) from the 5ms KV cache, never waiting on the Hiro RPC. The Hiro RPC is only queried for user-specific balances (`/v2/accounts/{address}/balances`) and read-only contract simulations.
+
+*Security Guarantee:* The Next.js layer executes zero financial logic. It never holds keys and never signs transactions. All truth remains mathematically proven in Clarity.
+
+## 2. Frontend UX Standards
+
+### Stacks-Native Flows (No Ethereum Double-Approvals)
+The Stacks blockchain utilizes Post-Conditions, which guarantee strict asset transfer limits without needing a separate ERC-20 style `approve` transaction.
+- **The Deposit Flow:** Users click "Deposit", sign *one* transaction via `@stacks/connect` indicating their intent to transfer `X sBTC`, and the contract executes immediately.
+
+### Optimistic UI for 10-Minute Blocks
+Because Stacks blocks are tied to Bitcoin (10-30 min), we cannot lock the UI with a simple loading spinner during pending transactions.
+- **The Solution:** We implement robust Optimistic UI state. When a user deposits sBTC, the UI preemptively updates their perceived PT/YT balances and tags them with a small "Pending" badge. The user can continue navigating the dashboard (Portfolio, Market) while the transaction confirms in the mempool.
+
+## 3. Strict MVP UI Scope Lock
+
+The dashboard structure is aggressively pruned to perfectly match the MVP smart contract capabilities.
+
+- **Global Auth:** Strict split between Public Landing Page and Authenticated Dashboard. No silent transactions.
+
+**Dashboard Pages:**
+1. **Overview:** Quick snapshot of user portfolio and global epoch state.
+2. **Deposit:** The core minting engine. Input sBTC → Preview PT/YT output → Single-click Sign.
+3. **Portfolio:** Holdings breakdown. *Strict Rule enforced:* Redemptions and Yield Claims are explicitly disabled until the `epoch-maturity` block is reached. No mid-epoch claims.
+4. **Market (PT Only):** To align with the Phase 1 backend, the YT AMM is removed from the UI. Users can only Buy/Sell PTs against the time-decaying AMM.
+5. **Protocol:** A pristine, auto-refreshing dashboard of global protocol health (TVL, Total Issued).
+
+## 4. The Final Tech Stack
+- **Framework:** Next.js 15 (TypeScript) + Tailwind CSS
+- **Wallet Auth:** `@stacks/connect` (Supports Leather & Xverse)
+- **Data Fetching:** Hiro API for on-demand user balances + Vercel KV for cached protocol state.
+- **Yield Source Engine:** Real testnet yield pulled from Zest Protocol (calculated off-chain by the Next.js server for instant UI previews, verified on-chain by the contract).

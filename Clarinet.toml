@@ -1,0 +1,43 @@
+[project]
+name = "vort"
+authors = []
+description = ""
+telemetry = true
+requirements = []
+
+[contracts.sip-010-trait]
+path = "contracts/traits/sip-010-trait.clar"
+depends_on = []
+
+[contracts.sbtc-token]
+path = "contracts/sbtc-token.clar"
+depends_on = ["sip-010-trait"]
+
+[contracts.pt-token]
+path = "contracts/pt-token.clar"
+depends_on = ["sip-010-trait"]
+
+[contracts.yt-token]
+path = "contracts/yt-token.clar"
+depends_on = ["sip-010-trait"]
+
+[contracts.tokenizer]
+path = "contracts/tokenizer.clar"
+depends_on = ["sbtc-token", "pt-token", "yt-token"]
+
+[contracts.yield-router]
+path = "contracts/yield-router.clar"
+depends_on = ["sbtc-token", "yt-token"]
+
+[contracts.pt-amm]
+path = "contracts/pt-amm.clar"
+depends_on = ["sbtc-token", "pt-token"]
+
+[repl.analysis]
+passes = ["check_checker"]
+
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false
