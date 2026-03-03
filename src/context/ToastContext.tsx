@@ -63,45 +63,39 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={toast.id}
             className={`
               animate-in slide-in-from-right fade-in duration-300
-              rounded-xl border p-4 shadow-2xl backdrop-blur-sm
-              ${toast.type === "success" ? "bg-emerald-500/10 border-emerald-500/30" : ""}
-              ${toast.type === "error" ? "bg-red-500/10 border-red-500/30" : ""}
-              ${toast.type === "info" ? "bg-indigo-500/10 border-indigo-500/30" : ""}
+              rounded-xl border shadow-2xl p-4
+              ${toast.type === "success" ? "bg-emerald-600 border-emerald-700" : ""}
+              ${toast.type === "error" ? "bg-red-600 border-red-700" : ""}
+              ${toast.type === "info" ? "bg-indigo-600 border-indigo-700" : ""}
             `}
           >
             <div className="flex items-start gap-3">
               <div className="mt-0.5">
                 {toast.type === "success" && (
-                  <CheckCircle2 size={18} className="text-emerald-400" />
+                  <CheckCircle2 size={18} className="text-white" />
                 )}
                 {toast.type === "error" && (
-                  <XCircle size={18} className="text-red-400" />
+                  <XCircle size={18} className="text-white" />
                 )}
                 {toast.type === "info" && (
-                  <Info size={18} className="text-indigo-400" />
+                  <Info size={18} className="text-white" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p
-                  className={`font-medium text-sm ${
-                    toast.type === "success"
-                      ? "text-emerald-400"
-                      : toast.type === "error"
-                        ? "text-red-400"
-                        : "text-indigo-400"
-                  }`}
-                >
+                <p className="font-semibold text-sm text-white">
                   {toast.title}
                 </p>
                 {toast.message && (
-                  <p className="text-slate-400 text-xs mt-1">{toast.message}</p>
+                  <p className="text-slate-100 text-xs mt-1 font-medium">
+                    {toast.message}
+                  </p>
                 )}
                 {toast.txId && (
                   <a
                     href={`https://explorer.hiro.so/txid/${toast.txId}?chain=testnet`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-indigo-400 text-xs mt-1 hover:underline inline-block cursor-pointer"
+                    className="text-white font-semibold text-xs mt-1 hover:underline inline-block cursor-pointer"
                   >
                     View on Explorer →
                   </a>
@@ -109,7 +103,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               </div>
               <button
                 onClick={() => removeToast(toast.id)}
-                className="text-slate-500 hover:text-white transition-colors cursor-pointer"
+                className="text-white/70 hover:text-white transition-colors cursor-pointer"
               >
                 <X size={14} />
               </button>
