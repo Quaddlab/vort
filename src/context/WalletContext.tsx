@@ -55,6 +55,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const connect = useCallback(() => {
+    // 1. If Leather is installed, connect directly immediately (bypass modal)
+    if (typeof window !== "undefined" && (window as any).LeatherProvider) {
+      connectDirectly("leather");
+      return;
+    }
+
+    // 2. Fallback: if not installed, open the modal to show options/install links
     setIsConnectModalOpen(true);
   }, []);
 
@@ -64,9 +71,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       if (walletId === "leather") {
         provider = (window as any).LeatherProvider;
         if (!provider) {
-          alert(
-            "Leather Wallet not found. Please install the browser extension.",
-          );
+          window.open("https://leather.io/install-extension", "_blank");
           return;
         }
       } else if (walletId === "xverse") {
@@ -74,9 +79,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           (window as any).XverseProviders?.StacksProvider ||
           (window as any).BitcoinProvider;
         if (!provider) {
-          alert(
-            "Xverse Wallet not found. Please install the browser extension.",
-          );
+          window.open("https://www.xverse.app/download", "_blank");
           return;
         }
       }

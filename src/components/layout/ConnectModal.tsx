@@ -52,8 +52,17 @@ export function ConnectModal() {
                 <p className="text-slate-400 text-xs mt-0.5">leather.io</p>
               </div>
             </div>
-            <div className="text-xs font-semibold px-3 py-1.5 rounded bg-[#1a1a24] text-slate-300 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-              Connect
+            <div className="flex items-center gap-2">
+              {typeof window !== "undefined" &&
+              (window as any).LeatherProvider ? (
+                <div className="text-xs font-semibold px-3 py-1.5 rounded bg-[#1a1a24] text-slate-300 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                  Connect
+                </div>
+              ) : (
+                <div className="text-xs font-semibold px-3 py-1.5 rounded bg-orange-500/10 text-orange-400 group-hover:bg-orange-500 group-hover:text-white transition-colors flex items-center gap-1">
+                  Install <ExternalLink size={10} />
+                </div>
+              )}
             </div>
           </button>
 
@@ -71,8 +80,18 @@ export function ConnectModal() {
                 <p className="text-slate-400 text-xs mt-0.5">xverse.app</p>
               </div>
             </div>
-            <div className="text-xs font-semibold px-3 py-1.5 rounded bg-[#1a1a24] text-slate-300 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-              Connect
+            <div className="flex items-center gap-2">
+              {typeof window !== "undefined" &&
+              ((window as any).XverseProviders?.StacksProvider ||
+                (window as any).BitcoinProvider) ? (
+                <div className="text-xs font-semibold px-3 py-1.5 rounded bg-[#1a1a24] text-slate-300 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                  Connect
+                </div>
+              ) : (
+                <div className="text-xs font-semibold px-3 py-1.5 rounded bg-orange-500/10 text-orange-400 group-hover:bg-orange-500 group-hover:text-white transition-colors flex items-center gap-1">
+                  Install <ExternalLink size={10} />
+                </div>
+              )}
             </div>
           </button>
         </div>
