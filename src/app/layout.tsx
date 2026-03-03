@@ -25,9 +25,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans bg-black text-slate-200 antialiased`}
       >
-        <WalletProvider>
-          <ToastProvider>{children}</ToastProvider>
-        </WalletProvider>
+        <ToastProvider>
+          <WalletProvider>{children}</WalletProvider>
+        </ToastProvider>
       </body>
     </html>
   );

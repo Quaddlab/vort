@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { ConnectModal } from "@/components/layout/ConnectModal";
+import { useToast } from "@/context/ToastContext";
 
 // ─── Storage key for persisting wallet address ───────────────────────────────
 const WALLET_STORAGE_KEY = "vort_wallet_address";
@@ -62,6 +63,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const router = useRouter();
+  const { addToast } = useToast();
 
   // Restore persisted address on mount
   useEffect(() => {
@@ -112,9 +114,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           setAddress(stxAddress);
           localStorage.setItem(WALLET_STORAGE_KEY, stxAddress);
           setIsConnectModalOpen(false);
+          addToast({
+            type: "success",
+            title: "Wallet Connected",
+            message: `Connected to ${stxAddress.slice(0, 6)}...${stxAddress.slice(-4)}`,
+          });
           router.push("/dashboard");
         } else {
-          console.error("No STX address found in wallet response:", response);
+          addToast({
+            type: "error",
+            title: "Connection Failed",
+            message: "No STX address found. Please try again.",
+          });
         }
       } catch (error: any) {
         if (
@@ -122,10 +133,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           error?.message?.includes("cancel") ||
           error?.message?.includes("denied")
         ) {
-          // User rejected — just close the modal
-          console.log("User cancelled wallet connection");
+          addToast({
+            type: "info",
+            title: "Connection Cancelled",
+            message: "You cancelled the wallet connection.",
+          });
         } else {
-          console.error("Wallet connection failed:", error);
+          addToast({
+            type: "error",
+            title: "Connection Failed",
+            message: "Something went wrong. Please try again.",
+          });
         }
         setIsConnectModalOpen(false);
       }
