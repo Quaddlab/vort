@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
   type ReactNode,
 } from "react";
@@ -154,19 +155,29 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(WALLET_STORAGE_KEY);
   }, []);
 
+  const value = useMemo(
+    () => ({
+      address,
+      isConnected: !!address,
+      isLoading,
+      isConnectModalOpen,
+      setIsConnectModalOpen,
+      connect,
+      connectDirectly,
+      disconnect,
+    }),
+    [
+      address,
+      isLoading,
+      isConnectModalOpen,
+      connect,
+      connectDirectly,
+      disconnect,
+    ],
+  );
+
   return (
-    <WalletContext.Provider
-      value={{
-        address,
-        isConnected: !!address,
-        isLoading,
-        isConnectModalOpen,
-        setIsConnectModalOpen,
-        connect,
-        connectDirectly,
-        disconnect,
-      }}
-    >
+    <WalletContext.Provider value={value}>
       {children}
       <ConnectModal />
     </WalletContext.Provider>
