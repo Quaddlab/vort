@@ -1,10 +1,11 @@
 "use client";
 
-import { Lock, Wallet } from "lucide-react";
+import { Lock, Unlock, Clock, Wallet } from "lucide-react";
 import { useState } from "react";
 import { useWallet } from "@/context/WalletContext";
 import { useToast } from "@/context/ToastContext";
 import { useBalances } from "@/hooks/useBalances";
+import { useEpoch } from "@/hooks/useEpoch";
 import { formatBalance, redeemTokens, claimYield } from "@/lib/stacks";
 import Link from "next/link";
 
@@ -14,6 +15,7 @@ export default function PortfolioPage() {
   const { address } = useWallet();
   const { addToast } = useToast();
   const { balances, loading, refetch } = useBalances(address);
+  const epoch = useEpoch();
   const [txState, setTxState] = useState<TxState>("idle");
   const [txId, setTxId] = useState<string | null>(null);
 
@@ -132,8 +134,25 @@ export default function PortfolioPage() {
                     </p>
                   </div>
                 </div>
-                <div className="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400 text-xs flex items-center gap-1.5">
-                  <Lock size={12} /> Locked
+                <div
+                  className={`px-2.5 py-1 rounded border text-xs flex items-center gap-1.5 ${
+                    epoch.isMature
+                      ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                      : "bg-slate-900 border-slate-800 text-slate-400"
+                  }`}
+                >
+                  {epoch.loading ? (
+                    <Clock size={12} className="animate-spin" />
+                  ) : epoch.isMature ? (
+                    <Unlock size={12} />
+                  ) : (
+                    <Lock size={12} />
+                  )}
+                  {epoch.loading
+                    ? "Loading..."
+                    : epoch.isMature
+                      ? "Matured"
+                      : "Locked"}
                 </div>
               </div>
 
@@ -142,18 +161,28 @@ export default function PortfolioPage() {
                   {loading ? "—" : formatBalance(ptBalance)}
                 </p>
                 <p className="text-slate-500 text-sm">
-                  Redeems 1:1 for sBTC at maturity
+                  {epoch.loading
+                    ? "Fetching maturity data..."
+                    : epoch.isMature
+                      ? "Tokens are fully matured. Redeem 1:1 for sBTC now."
+                      : `Redeems 1:1 for sBTC • ~${epoch.blocksRemaining} blocks left (${new Date(epoch.estimatedMaturityDate).toLocaleDateString()})`}
                 </p>
               </div>
 
               <button
                 onClick={handleRedeem}
-                disabled={ptBalance === 0 || txState === "pending"}
+                disabled={
+                  ptBalance === 0 ||
+                  txState === "pending" ||
+                  (!epoch.isMature && !epoch.loading)
+                }
                 className="w-full bg-[#111118] border border-[#1a1a24] text-slate-400 hover:text-white hover:border-emerald-500/30 py-3 rounded-xl text-sm font-medium cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
                 {txState === "pending"
                   ? "Waiting for wallet..."
-                  : "Redeem sBTC (After Maturity)"}
+                  : epoch.isMature
+                    ? "Redeem sBTC"
+                    : "Redeem sBTC (After Maturity)"}
               </button>
             </div>
 

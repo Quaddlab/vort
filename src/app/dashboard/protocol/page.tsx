@@ -11,11 +11,13 @@ import {
 import { useWallet } from "@/context/WalletContext";
 import { useBalances } from "@/hooks/useBalances";
 import { useZestApy } from "@/hooks/useZestApy";
+import { useEpoch } from "@/hooks/useEpoch";
 import { formatBalance } from "@/lib/stacks";
 
 export default function ProtocolPage() {
   const { address } = useWallet();
   const { balances, loading } = useBalances(address);
+  const epoch = useEpoch();
   const zest = useZestApy();
 
   const ptBalance = balances?.pt ?? 0;
@@ -75,10 +77,14 @@ export default function ProtocolPage() {
             icon: Activity,
           },
           {
-            label: "Epoch 120 Status",
-            value: "Active",
+            label: `Epoch ${epoch.epochId} Status`,
+            value: epoch.loading ? "—" : epoch.isMature ? "Matured" : "Active",
             suffix: "",
-            change: "Testnet",
+            change: epoch.loading
+              ? "Fetching..."
+              : epoch.isMature
+                ? "Redemptions Open"
+                : `~${epoch.blocksRemaining} blocks left`,
             icon: Clock,
           },
         ].map((metric, i) => (

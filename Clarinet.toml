@@ -21,13 +21,17 @@ depends_on = ["sip-010-trait"]
 path = "contracts/yt-token.clar"
 depends_on = ["sip-010-trait"]
 
+[contracts.mock-zest-vault]
+path = "contracts/mock-zest-vault.clar"
+depends_on = ["sbtc-token"]
+
 [contracts.tokenizer]
 path = "contracts/tokenizer.clar"
 depends_on = ["sbtc-token", "pt-token", "yt-token"]
 
 [contracts.yield-router]
 path = "contracts/yield-router.clar"
-depends_on = ["sbtc-token", "yt-token"]
+depends_on = ["sbtc-token", "yt-token", "mock-zest-vault"]
 
 [contracts.pt-amm]
 path = "contracts/pt-amm.clar"
