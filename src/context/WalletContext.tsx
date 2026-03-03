@@ -40,9 +40,6 @@ const WalletContext = createContext<WalletState>({
 
 // ─── Helper: extract STX testnet address from provider response ──────────────
 function extractStxAddress(addresses: any[]): string | null {
-  const network =
-    process.env.NEXT_PUBLIC_NETWORK === "mainnet" ? "mainnet" : "testnet";
-
   // Leather returns addresses with purpose "stacks"
   const stxAddr = addresses.find(
     (a: any) =>
@@ -70,7 +67,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     try {
       const saved = localStorage.getItem(WALLET_STORAGE_KEY);
       if (saved) setAddress(saved);
-    } catch {}
+    } catch (_e) {}
     setIsLoading(false);
   }, []);
 
@@ -114,18 +111,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           setAddress(stxAddress);
           localStorage.setItem(WALLET_STORAGE_KEY, stxAddress);
           setIsConnectModalOpen(false);
-          addToast({
-            type: "success",
-            title: "Wallet Connected",
-            message: `Connected to ${stxAddress.slice(0, 6)}...${stxAddress.slice(-4)}`,
-          });
+          addToast(
+            "success",
+            "Wallet Connected",
+            `Connected to ${stxAddress.slice(0, 6)}...${stxAddress.slice(-4)}`,
+          );
           router.push("/dashboard");
         } else {
-          addToast({
-            type: "error",
-            title: "Connection Failed",
-            message: "No STX address found. Please try again.",
-          });
+          addToast(
+            "error",
+            "Connection Failed",
+            "No STX address found. Please try again.",
+          );
         }
       } catch (error: any) {
         if (
@@ -133,22 +130,22 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           error?.message?.includes("cancel") ||
           error?.message?.includes("denied")
         ) {
-          addToast({
-            type: "info",
-            title: "Connection Cancelled",
-            message: "You cancelled the wallet connection.",
-          });
+          addToast(
+            "info",
+            "Connection Cancelled",
+            "You cancelled the wallet connection.",
+          );
         } else {
-          addToast({
-            type: "error",
-            title: "Connection Failed",
-            message: "Something went wrong. Please try again.",
-          });
+          addToast(
+            "error",
+            "Connection Failed",
+            "Something went wrong. Please try again.",
+          );
         }
         setIsConnectModalOpen(false);
       }
     },
-    [router],
+    [router, addToast],
   );
 
   // ── disconnect ───────────────────────────────────────────────────────────
