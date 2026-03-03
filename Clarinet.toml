@@ -29,7 +29,7 @@ depends_on = ["sbtc-token"]
 path = "contracts/tokenizer.clar"
 depends_on = ["sbtc-token", "pt-token", "yt-token"]
 
-[contracts.yield-router]
+[contracts.yield-router-v2]
 path = "contracts/yield-router.clar"
 depends_on = ["sbtc-token", "yt-token", "mock-zest-vault"]
 
