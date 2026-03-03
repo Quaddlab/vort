@@ -72,12 +72,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  // ── connect: auto-detect Leather, otherwise show our custom modal ────────
+  // ── connect: always show our custom modal first ───────────────────────────
   const connect = useCallback(() => {
-    if (typeof window !== "undefined" && (window as any).LeatherProvider) {
-      connectDirectly("leather");
-      return;
-    }
     setIsConnectModalOpen(true);
   }, []);
 
