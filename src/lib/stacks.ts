@@ -93,7 +93,7 @@ export function claimYield(
 ) {
   openContractCall({
     contractAddress: DEPLOYER,
-    contractName: "yield-router",
+    contractName: "yield-router-v2",
     functionName: "claim-yield",
     functionArgs: [],
     postConditionMode: PostConditionMode.Allow,

@@ -170,7 +170,7 @@ export default function ProtocolPage() {
               { name: "pt-token", desc: "Principal Token" },
               { name: "yt-token", desc: "Yield Token" },
               { name: "pt-amm", desc: "AMM Pool" },
-              { name: "yield-router", desc: "Yield Distribution" },
+              { name: "yield-router-v2", desc: "Yield Distribution" },
               { name: "sbtc-token", desc: "Test sBTC" },
             ].map((c, i) => (
               <a
