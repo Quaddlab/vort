@@ -8,9 +8,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { AppConfig, authenticate, UserSession } from "@stacks/connect";
+import { AppConfig, UserSession } from "@stacks/connect";
 import { useRouter } from "next/navigation";
 import { ConnectModal } from "@/components/layout/ConnectModal";
+import { v4 as uuidv4 } from "uuid"; // Need to generate transit auth keys manually
 
 interface WalletState {
   address: string | null;
@@ -84,13 +85,30 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      authenticate(
-        {
-          appDetails: {
-            name: "Vort",
-            icon: "/favicon.ico",
-          },
-          onFinish: () => {
+      // We bypass @stacks/connect authenticate() completely to avoid the UI popups.
+      // Instead we manually get the payload from the session and send it to the provider.
+
+      const appDetails = {
+        name: "Vort",
+        icon: window.location.origin + "/favicon.ico",
+      };
+
+      const transitKey = userSession.generateAndStoreTransitKey();
+      const authRequest = userSession.makeAuthRequest(
+        transitKey,
+        `${window.location.origin}/`,
+        `${window.location.origin}/`,
+        ["store_write"],
+        appDetails.name,
+        appDetails.icon,
+        `${window.location.origin}/`,
+      );
+
+      try {
+        provider
+          .authenticationRequest(authRequest)
+          .then(async (authResponse: string) => {
+            await userSession.handlePendingSignIn(authResponse);
             const userData = userSession.loadUserData();
             const network =
               process.env.NEXT_PUBLIC_NETWORK === "mainnet"
@@ -100,14 +118,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             setAddress(addr);
             setIsConnectModalOpen(false);
             router.push("/dashboard");
-          },
-          onCancel: () => {
+          })
+          .catch((error: any) => {
+            console.error("Wallet connection cancelled or failed:", error);
             setIsConnectModalOpen(false);
-          },
-          userSession,
-        },
-        provider,
-      );
+          });
+      } catch (error) {
+        console.error("Failed to send auth request to provider:", error);
+        setIsConnectModalOpen(false);
+      }
     },
     [router],
   );
