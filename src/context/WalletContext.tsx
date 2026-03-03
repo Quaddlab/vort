@@ -8,11 +8,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { AppConfig, UserSession } from "@stacks/connect";
 import { useRouter } from "next/navigation";
 import { ConnectModal } from "@/components/layout/ConnectModal";
-import { v4 as uuidv4 } from "uuid"; // Need to generate transit auth keys manually
 
+// ─── Storage key for persisting wallet address ───────────────────────────────
+const WALLET_STORAGE_KEY = "vort_wallet_address";
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 interface WalletState {
   address: string | null;
   isConnected: boolean;
@@ -23,9 +25,6 @@ interface WalletState {
   connectDirectly: (walletId: "leather" | "xverse") => void;
   disconnect: () => void;
 }
-
-const appConfig = new AppConfig(["store_write"]);
-const userSession = new UserSession({ appConfig });
 
 const WalletContext = createContext<WalletState>({
   address: null,
@@ -38,37 +37,55 @@ const WalletContext = createContext<WalletState>({
   disconnect: () => {},
 });
 
+// ─── Helper: extract STX testnet address from provider response ──────────────
+function extractStxAddress(addresses: any[]): string | null {
+  const network =
+    process.env.NEXT_PUBLIC_NETWORK === "mainnet" ? "mainnet" : "testnet";
+
+  // Leather returns addresses with purpose "stacks"
+  const stxAddr = addresses.find(
+    (a: any) =>
+      a.symbol === "STX" || a.purpose === "stacks" || a.type === "stacks",
+  );
+
+  if (stxAddr) return stxAddr.address;
+
+  // Fallback: first address
+  if (addresses.length > 0) return addresses[0].address;
+
+  return null;
+}
+
+// ─── Provider ────────────────────────────────────────────────────────────────
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [address, setAddress] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const router = useRouter();
 
+  // Restore persisted address on mount
   useEffect(() => {
-    if (userSession.isUserSignedIn()) {
-      const userData = userSession.loadUserData();
-      const network =
-        process.env.NEXT_PUBLIC_NETWORK === "mainnet" ? "mainnet" : "testnet";
-      const addr = userData.profile?.stxAddress?.[network] || null;
-      setAddress(addr);
-    }
+    try {
+      const saved = localStorage.getItem(WALLET_STORAGE_KEY);
+      if (saved) setAddress(saved);
+    } catch {}
     setIsLoading(false);
   }, []);
 
+  // ── connect: auto-detect Leather, otherwise show our custom modal ────────
   const connect = useCallback(() => {
-    // 1. If Leather is installed, connect directly immediately (bypass modal)
     if (typeof window !== "undefined" && (window as any).LeatherProvider) {
       connectDirectly("leather");
       return;
     }
-
-    // 2. Fallback: if not installed, open the modal to show options/install links
     setIsConnectModalOpen(true);
   }, []);
 
+  // ── connectDirectly: talk to the wallet extension directly ───────────────
   const connectDirectly = useCallback(
-    (walletId: "leather" | "xverse") => {
+    async (walletId: "leather" | "xverse") => {
       let provider: any;
+
       if (walletId === "leather") {
         provider = (window as any).LeatherProvider;
         if (!provider) {
@@ -85,55 +102,45 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // We bypass @stacks/connect authenticate() completely to avoid the UI popups.
-      // Instead we manually get the payload from the session and send it to the provider.
-
-      const appDetails = {
-        name: "Vort",
-        icon: window.location.origin + "/favicon.ico",
-      };
-
-      const transitKey = userSession.generateAndStoreTransitKey();
-      const authRequest = userSession.makeAuthRequest(
-        transitKey,
-        `${window.location.origin}/`,
-        `${window.location.origin}/`,
-        ["store_write"],
-        appDetails.name,
-        appDetails.icon,
-        `${window.location.origin}/`,
-      );
-
       try {
-        provider
-          .authenticationRequest(authRequest)
-          .then(async (authResponse: string) => {
-            await userSession.handlePendingSignIn(authResponse);
-            const userData = userSession.loadUserData();
-            const network =
-              process.env.NEXT_PUBLIC_NETWORK === "mainnet"
-                ? "mainnet"
-                : "testnet";
-            const addr = userData.profile?.stxAddress?.[network] || null;
-            setAddress(addr);
-            setIsConnectModalOpen(false);
-            router.push("/dashboard");
-          })
-          .catch((error: any) => {
-            console.error("Wallet connection cancelled or failed:", error);
-            setIsConnectModalOpen(false);
-          });
-      } catch (error) {
-        console.error("Failed to send auth request to provider:", error);
+        // Call the wallet extension directly — NO Stacks Connect UI involved
+        const response = await provider.request("getAddresses");
+
+        // Parse addresses from the response
+        const addresses =
+          response?.result?.addresses || response?.addresses || [];
+
+        const stxAddress = extractStxAddress(addresses);
+
+        if (stxAddress) {
+          setAddress(stxAddress);
+          localStorage.setItem(WALLET_STORAGE_KEY, stxAddress);
+          setIsConnectModalOpen(false);
+          router.push("/dashboard");
+        } else {
+          console.error("No STX address found in wallet response:", response);
+        }
+      } catch (error: any) {
+        if (
+          error?.code === 4001 ||
+          error?.message?.includes("cancel") ||
+          error?.message?.includes("denied")
+        ) {
+          // User rejected — just close the modal
+          console.log("User cancelled wallet connection");
+        } else {
+          console.error("Wallet connection failed:", error);
+        }
         setIsConnectModalOpen(false);
       }
     },
     [router],
   );
 
+  // ── disconnect ───────────────────────────────────────────────────────────
   const disconnect = useCallback(() => {
-    userSession.signUserOut();
     setAddress(null);
+    localStorage.removeItem(WALLET_STORAGE_KEY);
   }, []);
 
   return (
