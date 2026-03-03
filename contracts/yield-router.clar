@@ -1,10 +1,12 @@
-;; Vort Yield Router - Yield Accrual and Epoch Manager
-;; Manages yield from Zest Protocol, splits to YT holders/treasury/reserve
+;; Vort Yield Router - Yield Accrual, Distribution & Zest Integration
+;; Routes deposited sBTC to Zest Protocol (mock vault on testnet)
+;; Manages yield splits: 90% to YT holders, 5% treasury, 5% reserve
 
 (define-constant ERR-NOT-AUTHORIZED (err u401))
 (define-constant ERR-NO-YIELD (err u420))
 (define-constant ERR-ALREADY-CLAIMED (err u421))
 (define-constant ERR-EPOCH-NOT-MATURE (err u422))
+(define-constant ERR-INSUFFICIENT-BALANCE (err u423))
 (define-constant CONTRACT-OWNER tx-sender)
 
 ;; Yield split ratios (in basis points, total = 10000)
@@ -18,22 +20,26 @@
 (define-data-var reserve-balance uint u0)
 (define-data-var treasury-address principal CONTRACT-OWNER)
 (define-data-var yield-per-token-stored uint u0)
+(define-data-var total-deposited-to-zest uint u0)
 
 ;; Per-user yield tracking
 (define-map user-yield-paid principal uint)
 (define-map user-yield-earned principal uint)
 
-;; Read-only: global yield state
+;; ============================================================================
+;; READ-ONLY FUNCTIONS
+;; ============================================================================
+
 (define-read-only (get-yield-info)
   {
     total-accrued: (var-get total-yield-accrued),
     total-distributed: (var-get total-yield-distributed),
     reserve: (var-get reserve-balance),
-    yield-per-token: (var-get yield-per-token-stored)
+    yield-per-token: (var-get yield-per-token-stored),
+    deposited-to-zest: (var-get total-deposited-to-zest)
   }
 )
 
-;; Read-only: user's claimable yield
 (define-read-only (get-claimable-yield (user principal))
   (let (
     (yt-balance (unwrap-panic (contract-call? .yt-token get-balance user)))
@@ -45,6 +51,32 @@
     (+ pending earned)
   )
 )
+
+;; ============================================================================
+;; ZEST INTEGRATION - Deposit routing
+;; ============================================================================
+
+;; Route sBTC from tokenizer to Zest vault for yield generation
+;; Called by the tokenizer after receiving sBTC from user
+(define-public (route-to-zest (amount uint))
+  (begin
+    (asserts! (> amount u0) (err u403))
+    ;; Forward sBTC to the mock Zest vault
+    ;; In production: contract-call? 'SP1A27KFY4XERQCCRCARCYD1CC5N7M6688BSYADJ7.v0-4-market supply-collateral-add ...
+    (try! (as-contract 
+      (contract-call? .mock-zest-vault deposit amount tx-sender)))
+
+    (var-set total-deposited-to-zest (+ (var-get total-deposited-to-zest) amount))
+
+    (print {event: "routed-to-zest", amount: amount, 
+            total-in-zest: (var-get total-deposited-to-zest)})
+    (ok amount)
+  )
+)
+
+;; ============================================================================
+;; YIELD ACCRUAL & DISTRIBUTION
+;; ============================================================================
 
 ;; Accrue yield - called when new yield arrives from Zest Protocol
 (define-public (accrue-yield (amount uint))
@@ -82,22 +114,23 @@
 ;; Claim yield - YT holders call this to collect accrued yield
 (define-public (claim-yield)
   (let (
-    (claimable (get-claimable-yield tx-sender))
+    (caller tx-sender)
+    (claimable (get-claimable-yield caller))
     (current-rate (var-get yield-per-token-stored))
   )
     (asserts! (> claimable u0) ERR-NO-YIELD)
 
     ;; Update user tracking
-    (map-set user-yield-paid tx-sender current-rate)
-    (map-set user-yield-earned tx-sender u0)
+    (map-set user-yield-paid caller current-rate)
+    (map-set user-yield-earned caller u0)
 
     ;; Transfer yield to user
     (try! (as-contract
-      (contract-call? .sbtc-token transfer claimable tx-sender tx-sender none)))
+      (contract-call? .sbtc-token transfer claimable tx-sender caller none)))
 
     (var-set total-yield-distributed (+ (var-get total-yield-distributed) claimable))
 
-    (print {event: "yield-claimed", user: tx-sender, amount: claimable})
+    (print {event: "yield-claimed", user: caller, amount: claimable})
     (ok claimable)
   )
 )
