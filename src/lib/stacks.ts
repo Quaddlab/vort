@@ -5,7 +5,7 @@
  */
 
 import { openContractCall, type FinishedTxData } from "@stacks/connect";
-import { uintCV, noneCV, principalCV } from "@stacks/transactions";
+import { uintCV, principalCV, PostConditionMode } from "@stacks/transactions";
 
 const DEPLOYER =
   process.env.NEXT_PUBLIC_CONTRACT_DEPLOYER ||
@@ -54,6 +54,7 @@ export function depositSbtc(
     contractName: "tokenizer",
     functionName: "deposit",
     functionArgs: [uintCV(microAmount)],
+    postConditionMode: PostConditionMode.Allow,
     network: NETWORK as "testnet" | "mainnet",
     onFinish,
     onCancel: onCancel || (() => {}),
@@ -76,6 +77,7 @@ export function redeemTokens(
     contractName: "tokenizer",
     functionName: "redeem",
     functionArgs: [uintCV(microAmount)],
+    postConditionMode: PostConditionMode.Allow,
     network: NETWORK as "testnet" | "mainnet",
     onFinish,
     onCancel: onCancel || (() => {}),
@@ -94,6 +96,7 @@ export function claimYield(
     contractName: "yield-router",
     functionName: "claim-yield",
     functionArgs: [],
+    postConditionMode: PostConditionMode.Allow,
     network: NETWORK as "testnet" | "mainnet",
     onFinish,
     onCancel: onCancel || (() => {}),
@@ -117,6 +120,7 @@ export function swapSbtcForPt(
     contractName: "pt-amm",
     functionName: "swap-sbtc-for-pt",
     functionArgs: [uintCV(microAmount), uintCV(minPtOut)],
+    postConditionMode: PostConditionMode.Allow,
     network: NETWORK as "testnet" | "mainnet",
     onFinish,
     onCancel: onCancel || (() => {}),
@@ -140,6 +144,7 @@ export function swapPtForSbtc(
     contractName: "pt-amm",
     functionName: "swap-pt-for-sbtc",
     functionArgs: [uintCV(microAmount), uintCV(minSbtcOut)],
+    postConditionMode: PostConditionMode.Allow,
     network: NETWORK as "testnet" | "mainnet",
     onFinish,
     onCancel: onCancel || (() => {}),
@@ -163,6 +168,7 @@ export function mintTestSbtc(
     contractName: "sbtc-token",
     functionName: "mint-for-testing",
     functionArgs: [uintCV(microAmount), principalCV(recipient)],
+    postConditionMode: PostConditionMode.Allow,
     network: NETWORK as "testnet" | "mainnet",
     onFinish,
     onCancel: onCancel || (() => {}),

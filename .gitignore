@@ -1,1 +1,6 @@
 
+# Internal documentation and logs
+backend_architecture.md.resolved
+frontend_architecture.md.resolved
+security_guidelines.md
+clarinet-errors.txt

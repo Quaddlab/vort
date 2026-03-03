@@ -10,14 +10,22 @@ import {
 } from "lucide-react";
 import { useWallet } from "@/context/WalletContext";
 import { useBalances } from "@/hooks/useBalances";
+import { useZestApy } from "@/hooks/useZestApy";
 import { formatBalance } from "@/lib/stacks";
 
 export default function ProtocolPage() {
   const { address } = useWallet();
   const { balances, loading } = useBalances(address);
+  const zest = useZestApy();
 
   const ptBalance = balances?.pt ?? 0;
   const ytBalance = balances?.yt ?? 0;
+
+  // Implied fixed yield derived from Zest supply rate (PT discount)
+  const impliedFixedYield = zest.loading
+    ? "—"
+    : (zest.supplyApyPercent * 0.9).toFixed(2);
+  const variableYield = zest.loading ? "—" : zest.supplyApyPercent.toFixed(2);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -48,16 +56,22 @@ export default function ProtocolPage() {
           },
           {
             label: "Implied Fixed Yield",
-            value: "4.85",
+            value: impliedFixedYield,
             suffix: "%",
-            change: "Tracking Zest",
+            change:
+              zest.source === "zest-v2-mainnet"
+                ? "🟢 Live from Zest"
+                : "Tracking Zest",
             icon: LineChart,
           },
           {
             label: "Variable Yield (Zest)",
-            value: "5.42",
+            value: variableYield,
             suffix: "%",
-            change: "Live APY",
+            change:
+              zest.source === "zest-v2-mainnet"
+                ? "🟢 Live APY"
+                : "Estimated APY",
             icon: Activity,
           },
           {

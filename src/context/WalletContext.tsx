@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { AppConfig, showConnect, UserSession } from "@stacks/connect";
+import { AppConfig, authenticate, UserSession } from "@stacks/connect";
 import { useRouter } from "next/navigation";
 
 interface WalletState {
@@ -39,20 +39,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (userSession.isUserSignedIn()) {
       const userData = userSession.loadUserData();
       const network =
-        process.env.NEXT_PUBLIC_NETWORK === "mainnet"
-          ? "mainAddress"
-          : "testAddress";
-      const addr =
-        userData.profile?.stxAddress?.[
-          network === "mainAddress" ? "mainnet" : "testnet"
-        ] || null;
+        process.env.NEXT_PUBLIC_NETWORK === "mainnet" ? "mainnet" : "testnet";
+      const addr = userData.profile?.stxAddress?.[network] || null;
       setAddress(addr);
     }
     setIsLoading(false);
   }, []);
 
   const connect = useCallback(() => {
-    showConnect({
+    authenticate({
       appDetails: {
         name: "Vort",
         icon: "/favicon.ico",
@@ -65,6 +60,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         setAddress(addr);
         router.push("/dashboard");
       },
+      onCancel: () => {},
       userSession,
     });
   }, [router]);
