@@ -10,56 +10,56 @@ plan:
       transactions:
         - contract-publish:
             contract-name: sip-010-trait
-            expected-sender: ST3B3CW20KY1YSCR4W3SFC2QPQJHTFF3CXK7YZCZ4
+            expected-sender: STQ0D3RA9WYWVGG0N02RNW32P02CPYKDG875YNTT
             cost: 4370
             path: contracts/traits/sip-010-trait.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: sbtc-token
-            expected-sender: ST3B3CW20KY1YSCR4W3SFC2QPQJHTFF3CXK7YZCZ4
+            expected-sender: STQ0D3RA9WYWVGG0N02RNW32P02CPYKDG875YNTT
             cost: 9780
             path: contracts/sbtc-token.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: mock-zest-vault
-            expected-sender: ST3B3CW20KY1YSCR4W3SFC2QPQJHTFF3CXK7YZCZ4
+            expected-sender: STQ0D3RA9WYWVGG0N02RNW32P02CPYKDG875YNTT
             cost: 45830
             path: contracts/mock-zest-vault.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: pt-token
-            expected-sender: ST3B3CW20KY1YSCR4W3SFC2QPQJHTFF3CXK7YZCZ4
+            expected-sender: STQ0D3RA9WYWVGG0N02RNW32P02CPYKDG875YNTT
             cost: 17730
             path: contracts/pt-token.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: pt-amm
-            expected-sender: ST3B3CW20KY1YSCR4W3SFC2QPQJHTFF3CXK7YZCZ4
+            expected-sender: STQ0D3RA9WYWVGG0N02RNW32P02CPYKDG875YNTT
             cost: 43550
             path: contracts/pt-amm.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: yt-token
-            expected-sender: ST3B3CW20KY1YSCR4W3SFC2QPQJHTFF3CXK7YZCZ4
+            expected-sender: STQ0D3RA9WYWVGG0N02RNW32P02CPYKDG875YNTT
             cost: 17450
             path: contracts/yt-token.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: tokenizer
-            expected-sender: ST3B3CW20KY1YSCR4W3SFC2QPQJHTFF3CXK7YZCZ4
+            expected-sender: STQ0D3RA9WYWVGG0N02RNW32P02CPYKDG875YNTT
             cost: 35140
             path: contracts/tokenizer.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: yield-router
-            expected-sender: ST3B3CW20KY1YSCR4W3SFC2QPQJHTFF3CXK7YZCZ4
+            expected-sender: STQ0D3RA9WYWVGG0N02RNW32P02CPYKDG875YNTT
             cost: 52540
             path: contracts/yield-router.clar
             anchor-block-only: true
