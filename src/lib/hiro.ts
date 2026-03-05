@@ -66,17 +66,18 @@ export async function getUserBalances(address: string): Promise<TokenBalances> {
 
   const data: HiroBalanceResponse = await response.json();
 
-  // Extract token balances from the fungible_tokens map
-  const deployer = PUBLIC_CONFIG.contractDeployer;
-  const ptKey = `${deployer}.pt-token::principal-token`;
-  const ytKey = `${deployer}.yt-token::yield-token`;
-  const sbtcKey = `${deployer}.sbtc-token::sbtc`;
+  // Extract token balances dynamically by looking for the token suffix,
+  // bypassing any environment variable hardcoding issues on Vercel.
+  const tokens = data.fungible_tokens || {};
+  const sbtcKey = findSbtcKey(tokens);
+  const ptKey = findPtKey(tokens);
+  const ytKey = findYtKey(tokens);
 
   return {
     stx: parseBalance(data.stx?.balance),
-    sbtc: parseBalance(data.fungible_tokens?.[sbtcKey]?.balance),
-    pt: parseBalance(data.fungible_tokens?.[ptKey]?.balance),
-    yt: parseBalance(data.fungible_tokens?.[ytKey]?.balance),
+    sbtc: parseBalance(sbtcKey ? tokens[sbtcKey]?.balance : undefined),
+    pt: parseBalance(ptKey ? tokens[ptKey]?.balance : undefined),
+    yt: parseBalance(ytKey ? tokens[ytKey]?.balance : undefined),
   };
 }
 
@@ -154,7 +155,22 @@ function parseBalance(raw: string | undefined): number {
  */
 function findSbtcKey(tokens: Record<string, unknown>): string {
   for (const key of Object.keys(tokens)) {
-    if (key.toLowerCase().includes("sbtc")) return key;
+    if (key.includes(".sbtc-token::") || key.toLowerCase().includes("sbtc"))
+      return key;
   }
   return ""; // not found
+}
+
+function findPtKey(tokens: Record<string, unknown>): string {
+  for (const key of Object.keys(tokens)) {
+    if (key.includes(".pt-token::")) return key;
+  }
+  return "";
+}
+
+function findYtKey(tokens: Record<string, unknown>): string {
+  for (const key of Object.keys(tokens)) {
+    if (key.includes(".yt-token::")) return key;
+  }
+  return "";
 }
