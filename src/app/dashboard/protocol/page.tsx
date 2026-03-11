@@ -166,7 +166,7 @@ export default function ProtocolPage() {
           <h3 className="text-white font-medium mb-6">Deployed Contracts</h3>
           <div className="flex-1 space-y-4">
             {[
-              { name: "tokenizer", desc: "Deposit & Redeem" },
+              { name: "tokenizer-v2", desc: "Deposit & Redeem" },
               { name: "pt-token", desc: "Principal Token" },
               { name: "yt-token", desc: "Yield Token" },
               { name: "pt-amm", desc: "AMM Pool" },

@@ -12,7 +12,7 @@ export const PUBLIC_CONFIG = {
   contractDeployer:
     process.env.NEXT_PUBLIC_CONTRACT_DEPLOYER ||
     "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM",
-  tokenizerContract: process.env.NEXT_PUBLIC_TOKENIZER_CONTRACT || "tokenizer",
+  tokenizerContract: process.env.NEXT_PUBLIC_TOKENIZER_CONTRACT || "tokenizer-v2",
   ptAmmContract: process.env.NEXT_PUBLIC_PT_AMM_CONTRACT || "pt-amm",
 } as const;
 

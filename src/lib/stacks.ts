@@ -51,7 +51,7 @@ export function depositSbtc(
 
   openContractCall({
     contractAddress: DEPLOYER,
-    contractName: "tokenizer",
+    contractName: "tokenizer-v2",
     functionName: "deposit",
     functionArgs: [uintCV(microAmount)],
     postConditionMode: PostConditionMode.Allow,
@@ -74,7 +74,7 @@ export function redeemTokens(
 
   openContractCall({
     contractAddress: DEPLOYER,
-    contractName: "tokenizer",
+    contractName: "tokenizer-v2",
     functionName: "redeem",
     functionArgs: [uintCV(microAmount)],
     postConditionMode: PostConditionMode.Allow,

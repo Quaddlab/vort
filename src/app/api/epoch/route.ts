@@ -5,7 +5,7 @@ import { PUBLIC_CONFIG } from "@/lib/env";
 export async function GET() {
   try {
     const deployer = PUBLIC_CONFIG.contractDeployer;
-    const url = `https://api.testnet.hiro.so/v2/contracts/call-read/${deployer}/tokenizer/get-epoch-info`;
+    const url = `https://api.testnet.hiro.so/v2/contracts/call-read/${deployer}/tokenizer-v2/get-epoch-info`;
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
