@@ -6,6 +6,7 @@ import {
   Settings2,
   Loader2,
   CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import { useState } from "react";
 import { useWallet } from "@/context/WalletContext";
@@ -16,9 +17,10 @@ import {
   swapSbtcForPt,
   swapPtForSbtc,
   toMicroUnits,
+  waitForTransaction,
 } from "@/lib/stacks";
 
-type TxState = "idle" | "pending" | "success";
+type TxState = "idle" | "pending" | "submitted" | "success" | "error";
 
 export default function MarketPage() {
   const { address } = useWallet();
@@ -58,17 +60,26 @@ export default function MarketPage() {
       swapSbtcForPt(
         payAmount,
         minOut,
-        (data) => {
+        async (data) => {
           setTxId(data.txId);
-          setTxState("success");
+          setTxState("submitted");
           setPayAmount("");
           addToast(
-            "success",
-            "Swap submitted!",
-            `Swapping ${payAmount} sBTC for PT.`,
+            "info",
+            "Swap broadcasted",
+            `Swapping ${payAmount} sBTC for PT. Awaiting confirmation...`,
             data.txId,
           );
-          refetch();
+          
+          const status = await waitForTransaction(data.txId);
+          if (status === "success") {
+            setTxState("success");
+            addToast("success", "Swap confirmed!", "Your transaction was successful.", data.txId);
+            refetch();
+          } else {
+            setTxState("error");
+            addToast("error", "Swap failed", "Your transaction failed on-chain.", data.txId);
+          }
         },
         () => {
           setTxState("idle");
@@ -79,17 +90,26 @@ export default function MarketPage() {
       swapPtForSbtc(
         payAmount,
         minOut,
-        (data) => {
+        async (data) => {
           setTxId(data.txId);
-          setTxState("success");
+          setTxState("submitted");
           setPayAmount("");
           addToast(
-            "success",
-            "Swap submitted!",
-            `Swapping ${payAmount} PT for sBTC.`,
+            "info",
+            "Swap broadcasted",
+            `Swapping ${payAmount} PT for sBTC. Awaiting confirmation...`,
             data.txId,
           );
-          refetch();
+
+          const status = await waitForTransaction(data.txId);
+          if (status === "success") {
+            setTxState("success");
+            addToast("success", "Swap confirmed!", "Your transaction was successful.", data.txId);
+            refetch();
+          } else {
+            setTxState("error");
+            addToast("error", "Swap failed", "Your transaction failed on-chain.", data.txId);
+          }
         },
         () => {
           setTxState("idle");
@@ -135,7 +155,24 @@ export default function MarketPage() {
         <div className="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-xl text-center">
           <CheckCircle2 size={16} className="text-emerald-400 inline mr-2" />
           <span className="text-emerald-400 font-medium text-sm">
-            Swap submitted!{" "}
+            Swap confirmed!{" "}
+            <a
+              href={`https://explorer.hiro.so/txid/${txId}?chain=testnet`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-400 hover:underline"
+            >
+              View on Explorer →
+            </a>
+          </span>
+        </div>
+      )}
+
+      {txState === "error" && txId && (
+        <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-xl text-center">
+          <XCircle size={16} className="text-red-400 inline mr-2" />
+          <span className="text-red-400 font-medium text-sm">
+            Swap failed!{" "}
             <a
               href={`https://explorer.hiro.so/txid/${txId}?chain=testnet`}
               target="_blank"
@@ -245,13 +282,18 @@ export default function MarketPage() {
           {/* CTA */}
           <button
             onClick={handleSwap}
-            disabled={!isValidAmount || txState === "pending"}
+            disabled={!isValidAmount || txState === "pending" || txState === "submitted"}
             className="w-full bg-white hover:bg-slate-200 text-black py-4 rounded-xl font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {txState === "pending" ? (
               <>
                 <Loader2 size={18} className="animate-spin" />
                 Waiting for wallet...
+              </>
+            ) : txState === "submitted" ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                Awaiting confirmation...
               </>
             ) : (
               `Swap ${payLabel} for ${receiveLabel}`

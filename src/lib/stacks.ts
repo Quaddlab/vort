@@ -174,3 +174,25 @@ export function mintTestSbtc(
     onCancel: onCancel || (() => {}),
   });
 }
+
+/**
+ * Polls the Stacks API until a transaction is confirmed or aborted.
+ */
+export async function waitForTransaction(txId: string): Promise<"success" | "failed"> {
+  const url = `https://api.${NETWORK}.hiro.so/extended/v1/tx/${txId}`;
+  /* eslint-disable-next-line no-constant-condition */
+  while (true) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.tx_status === "success") return "success";
+        if (data.tx_status && data.tx_status.startsWith("abort")) return "failed";
+      }
+    } catch (e) {
+      console.error("Polling tx error:", e);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+  }
+}
+

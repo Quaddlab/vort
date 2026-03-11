@@ -19,9 +19,10 @@ import {
   formatBalance,
   toMicroUnits,
   mintTestSbtc,
+  waitForTransaction,
 } from "@/lib/stacks";
 
-type TxState = "idle" | "pending" | "success" | "error";
+type TxState = "idle" | "pending" | "submitted" | "success" | "error";
 
 export default function DepositPage() {
   const [amount, setAmount] = useState("");
@@ -43,17 +44,26 @@ export default function DepositPage() {
 
     depositSbtc(
       amount,
-      (data) => {
+      async (data) => {
         setTxId(data.txId);
-        setTxState("success");
+        setTxState("submitted");
         setAmount("");
         addToast(
-          "success",
-          "Deposit submitted!",
-          `${amount} sBTC deposited. You will receive ${amount} PT + ${amount} YT once confirmed.`,
+          "info",
+          "Deposit broadcasted",
+          `${amount} sBTC deposited. Awaiting confirmation...`,
           data.txId,
         );
-        setTimeout(() => refetch(), 5000);
+        
+        const status = await waitForTransaction(data.txId);
+        if (status === "success") {
+          setTxState("success");
+          addToast("success", "Deposit confirmed!", "Your deposit was securely processed.", data.txId);
+          refetch();
+        } else {
+          setTxState("error");
+          addToast("error", "Deposit failed", "The transaction failed on-chain.", data.txId);
+        }
       },
       () => {
         setTxState("idle");
@@ -73,16 +83,25 @@ export default function DepositPage() {
     mintTestSbtc(
       "1",
       address,
-      (data) => {
+      async (data) => {
         setTxId(data.txId);
-        setTxState("success");
+        setTxState("submitted");
         addToast(
-          "success",
-          "sBTC Minted!",
-          "1 test sBTC has been minted to your wallet. Wait ~30 seconds for it to confirm, then you can deposit it.",
+          "info",
+          "Minting...",
+          "Minting test sBTC. Awaiting confirmation...",
           data.txId,
         );
-        setTimeout(() => refetch(), 5000);
+        
+        const status = await waitForTransaction(data.txId);
+        if (status === "success") {
+          setTxState("success");
+          addToast("success", "sBTC Minted!", "1 test sBTC is now in your wallet.", data.txId);
+          refetch();
+        } else {
+          setTxState("error");
+          addToast("error", "Mint failed", "Failed to mint sBTC.", data.txId);
+        }
       },
       () => {
         setTxState("idle");
@@ -220,7 +239,27 @@ export default function DepositPage() {
                   className="text-emerald-400 inline mr-2"
                 />
                 <span className="text-emerald-400 font-medium">
-                  Transaction submitted!
+                  Transaction confirmed!
+                </span>
+                {txId && (
+                  <a
+                    href={`https://explorer.hiro.so/txid/${txId}?chain=testnet`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-indigo-400 text-sm mt-2 hover:underline cursor-pointer"
+                  >
+                    View on Explorer →
+                  </a>
+                )}
+              </div>
+            ) : txState === "error" ? (
+              <div className="w-full bg-red-500/10 border border-red-500/30 py-4 rounded-xl text-center">
+                <XCircle
+                  size={20}
+                  className="text-red-400 inline mr-2"
+                />
+                <span className="text-red-400 font-medium">
+                  Transaction failed!
                 </span>
                 {txId && (
                   <a
@@ -236,13 +275,18 @@ export default function DepositPage() {
             ) : (
               <button
                 onClick={handleDeposit}
-                disabled={!isValidAmount || txState === "pending"}
+                disabled={!isValidAmount || txState === "pending" || txState === "submitted"}
                 className="w-full bg-white hover:bg-slate-200 text-black py-4 rounded-xl font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 group"
               >
                 {txState === "pending" ? (
                   <>
                     <Loader2 size={18} className="animate-spin" />
                     Waiting for wallet...
+                  </>
+                ) : txState === "submitted" ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Awaiting confirmation...
                   </>
                 ) : (
                   <>
