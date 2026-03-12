@@ -10,98 +10,98 @@ plan:
       transactions:
         - contract-publish:
             contract-name: sip-010-trait
-            expected-sender: ST3ZEFAE0CC31SMRWNZEA9XKC27C419SSFA6QAF9C
+            expected-sender: ST2Z2TW2YP31XW347ZJJ4ZAZSM08BXQ4S29MD60TB
             cost: 4370
             path: contracts/traits/sip-010-trait.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: sbtc-token
-            expected-sender: ST3ZEFAE0CC31SMRWNZEA9XKC27C419SSFA6QAF9C
+            expected-sender: ST2Z2TW2YP31XW347ZJJ4ZAZSM08BXQ4S29MD60TB
             cost: 9780
             path: contracts/sbtc-token.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: mock-zest-vault
-            expected-sender: ST3ZEFAE0CC31SMRWNZEA9XKC27C419SSFA6QAF9C
+            expected-sender: ST2Z2TW2YP31XW347ZJJ4ZAZSM08BXQ4S29MD60TB
             cost: 45830
             path: contracts/mock-zest-vault.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: mock-zest-vault-v2
-            expected-sender: ST3ZEFAE0CC31SMRWNZEA9XKC27C419SSFA6QAF9C
+            expected-sender: ST2Z2TW2YP31XW347ZJJ4ZAZSM08BXQ4S29MD60TB
             cost: 39180
             path: contracts/mock-zest-vault-v2.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: pt-token
-            expected-sender: ST3ZEFAE0CC31SMRWNZEA9XKC27C419SSFA6QAF9C
+            expected-sender: ST2Z2TW2YP31XW347ZJJ4ZAZSM08BXQ4S29MD60TB
             cost: 17730
             path: contracts/pt-token.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: pt-amm
-            expected-sender: ST3ZEFAE0CC31SMRWNZEA9XKC27C419SSFA6QAF9C
+            expected-sender: ST2Z2TW2YP31XW347ZJJ4ZAZSM08BXQ4S29MD60TB
             cost: 46120
             path: contracts/pt-amm.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: pt-amm-v2
-            expected-sender: ST3ZEFAE0CC31SMRWNZEA9XKC27C419SSFA6QAF9C
+            expected-sender: ST2Z2TW2YP31XW347ZJJ4ZAZSM08BXQ4S29MD60TB
             cost: 46120
             path: contracts/pt-amm-v2.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: pt-amm-v3
-            expected-sender: ST3ZEFAE0CC31SMRWNZEA9XKC27C419SSFA6QAF9C
+            expected-sender: ST2Z2TW2YP31XW347ZJJ4ZAZSM08BXQ4S29MD60TB
             cost: 45160
             path: contracts/pt-amm-v3.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: yt-token
-            expected-sender: ST3ZEFAE0CC31SMRWNZEA9XKC27C419SSFA6QAF9C
+            expected-sender: ST2Z2TW2YP31XW347ZJJ4ZAZSM08BXQ4S29MD60TB
             cost: 17450
             path: contracts/yt-token.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: tokenizer
-            expected-sender: ST3ZEFAE0CC31SMRWNZEA9XKC27C419SSFA6QAF9C
+            expected-sender: ST2Z2TW2YP31XW347ZJJ4ZAZSM08BXQ4S29MD60TB
             cost: 35140
             path: contracts/tokenizer.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: tokenizer-v2
-            expected-sender: ST3ZEFAE0CC31SMRWNZEA9XKC27C419SSFA6QAF9C
+            expected-sender: ST2Z2TW2YP31XW347ZJJ4ZAZSM08BXQ4S29MD60TB
             cost: 39370
             path: contracts/tokenizer-v2.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: tokenizer-v3
-            expected-sender: ST3ZEFAE0CC31SMRWNZEA9XKC27C419SSFA6QAF9C
+            expected-sender: ST2Z2TW2YP31XW347ZJJ4ZAZSM08BXQ4S29MD60TB
             cost: 39910
             path: contracts/tokenizer-v3.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: yield-router-v2
-            expected-sender: ST3ZEFAE0CC31SMRWNZEA9XKC27C419SSFA6QAF9C
+            expected-sender: ST2Z2TW2YP31XW347ZJJ4ZAZSM08BXQ4S29MD60TB
             cost: 52540
             path: contracts/yield-router.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: yield-router-v3
-            expected-sender: ST3ZEFAE0CC31SMRWNZEA9XKC27C419SSFA6QAF9C
+            expected-sender: ST2Z2TW2YP31XW347ZJJ4ZAZSM08BXQ4S29MD60TB
             cost: 48770
             path: contracts/yield-router-v3.clar
             anchor-block-only: true
