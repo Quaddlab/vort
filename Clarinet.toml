@@ -5,8 +5,6 @@ authors = []
 telemetry = true
 cache_dir = '.cache'
 
-[[project.requirements]]
-contract_id = 'ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT.sbtc-token'
 
 [contracts.sip-010-trait]
 path = 'contracts/traits/sip-010-trait.clar'

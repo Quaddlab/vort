@@ -2,7 +2,7 @@
 id: 0
 name: Testnet deployment
 network: testnet
-stacks-node: "https://stacks-node-api.testnet.stacks.co"
+stacks-node: "https://api.testnet.hiro.so"
 bitcoin-node: "http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332"
 plan:
   batches:
@@ -10,65 +10,100 @@ plan:
       transactions:
         - contract-publish:
             contract-name: sip-010-trait
-            expected-sender: ST2J6FKJT9K52YCWCM5V1893E5PXSJBACDCZASKJV
+            expected-sender: ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44
             cost: 4370
             path: contracts/traits/sip-010-trait.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: sbtc-token
-            expected-sender: ST2J6FKJT9K52YCWCM5V1893E5PXSJBACDCZASKJV
+            expected-sender: ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44
             cost: 9780
             path: contracts/sbtc-token.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
-            contract-name: mock-zest-vault
-            expected-sender: ST2J6FKJT9K52YCWCM5V1893E5PXSJBACDCZASKJV
-            cost: 45830
-            path: contracts/mock-zest-vault.clar
-            anchor-block-only: true
-            clarity-version: 1
-        - contract-publish:
             contract-name: pt-token
-            expected-sender: ST2J6FKJT9K52YCWCM5V1893E5PXSJBACDCZASKJV
+            expected-sender: ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44
             cost: 17730
             path: contracts/pt-token.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
-            contract-name: pt-amm
-            expected-sender: ST2J6FKJT9K52YCWCM5V1893E5PXSJBACDCZASKJV
-            cost: 43550
-            path: contracts/pt-amm.clar
-            anchor-block-only: true
-            clarity-version: 1
-        - contract-publish:
             contract-name: yt-token
-            expected-sender: ST2J6FKJT9K52YCWCM5V1893E5PXSJBACDCZASKJV
+            expected-sender: ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44
             cost: 17450
             path: contracts/yt-token.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
+            contract-name: mock-zest-vault
+            expected-sender: ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44
+            cost: 45830
+            path: contracts/mock-zest-vault.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: pt-amm
+            expected-sender: ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44
+            cost: 43550
+            path: contracts/pt-amm.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
             contract-name: tokenizer
-            expected-sender: ST2J6FKJT9K52YCWCM5V1893E5PXSJBACDCZASKJV
+            expected-sender: ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44
             cost: 35140
             path: contracts/tokenizer.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
             contract-name: tokenizer-v2
-            expected-sender: ST2J6FKJT9K52YCWCM5V1893E5PXSJBACDCZASKJV
+            expected-sender: ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44
             cost: 39370
             path: contracts/tokenizer-v2.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
+            contract-name: pt-amm-v2
+            expected-sender: ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44
+            cost: 43550
+            path: contracts/pt-amm-v2.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
             contract-name: yield-router-v2
-            expected-sender: ST2J6FKJT9K52YCWCM5V1893E5PXSJBACDCZASKJV
+            expected-sender: ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44
             cost: 52540
             path: contracts/yield-router.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: tokenizer-v3
+            expected-sender: ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44
+            cost: 39370
+            path: contracts/tokenizer-v3.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: pt-amm-v3
+            expected-sender: ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44
+            cost: 43550
+            path: contracts/pt-amm-v3.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: yield-router-v3
+            expected-sender: ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44
+            cost: 52540
+            path: contracts/yield-router-v3.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: mock-zest-vault-v2
+            expected-sender: ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44
+            cost: 45830
+            path: contracts/mock-zest-vault-v2.clar
             anchor-block-only: true
             clarity-version: 1
       epoch: "2.05"
