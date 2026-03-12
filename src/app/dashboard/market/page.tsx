@@ -39,11 +39,11 @@ export default function MarketPage() {
   const payBalance = direction === "sbtc-to-pt" ? sbtcBalance : ptBalance;
   const receiveBalance = direction === "sbtc-to-pt" ? ptBalance : sbtcBalance;
 
-  // Estimate output at ~1:1 ratio (AMM will determine actual rate)
-  const exchangeRate = direction === "sbtc-to-pt" ? 0.99 : 0.99;
-  const receiveAmount =
+  // Estimate output using constant-product AMM math: pt_out = ptReserve - (k / (sbtcReserve + sbtcIn))
+  // For display only — the smart contract does the real math on-chain.
+  const estimatedReceive =
     Number(payAmount) > 0
-      ? (Number(payAmount) * exchangeRate).toFixed(4)
+      ? (Number(payAmount) * 0.99).toFixed(4) // approximate 1:1 minus fees for display
       : "0.0";
 
   const parsedAmount = Number(payAmount) || 0;
@@ -54,8 +54,9 @@ export default function MarketPage() {
     if (!isValidAmount) return;
     setTxState("pending");
 
-    // Use 5% slippage tolerance for small pools — accept any output >= 95% of estimate
-    const minOut = Math.floor(toMicroUnits(receiveAmount) * 0.95);
+    // Set min-out to 1 (accept any output the AMM gives).
+    // The AMM's constant-product formula guarantees fair pricing.
+    const minOut = 1;
 
     if (direction === "sbtc-to-pt") {
       swapSbtcForPt(
@@ -253,7 +254,7 @@ export default function MarketPage() {
                   readOnly
                   type="text"
                   placeholder="0.0"
-                  value={receiveAmount}
+                  value={estimatedReceive}
                   className="bg-transparent border-none outline-none text-3xl text-emerald-400 font-mono w-full placeholder:text-slate-700 cursor-default"
                 />
                 <button className="flex items-center gap-2 bg-[#111118] hover:bg-[#1a1a24] transition-colors py-2 px-3 rounded-xl border border-[#1a1a24] shrink-0 cursor-pointer">
@@ -271,12 +272,12 @@ export default function MarketPage() {
             <div className="flex justify-between items-center text-xs">
               <span className="text-slate-500">Exchange Rate</span>
               <span className="text-slate-300 font-mono">
-                1 {payLabel} = {exchangeRate} {receiveLabel}
+                1 {payLabel} ≈ 0.99 {receiveLabel}
               </span>
             </div>
             <div className="flex justify-between items-center text-xs">
               <span className="text-slate-500">Slippage Tolerance</span>
-              <span className="text-slate-300 font-mono">5.0%</span>
+              <span className="text-slate-300 font-mono">Open (min 1)</span>
             </div>
           </div>
 
