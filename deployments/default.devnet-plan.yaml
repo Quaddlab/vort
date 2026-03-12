@@ -16,13 +16,6 @@ plan:
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
-            contract-name: pt-token
-            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 17730
-            path: contracts/pt-token.clar
-            anchor-block-only: true
-            clarity-version: 1
-        - contract-publish:
             contract-name: sbtc-token
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 9780
@@ -30,10 +23,31 @@ plan:
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
+            contract-name: mock-zest-vault
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 45830
+            path: contracts/mock-zest-vault.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: pt-token
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 17730
+            path: contracts/pt-token.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
             contract-name: pt-amm
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 43550
+            cost: 46120
             path: contracts/pt-amm.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: pt-amm-v2
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 46120
+            path: contracts/pt-amm-v2.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
@@ -51,9 +65,16 @@ plan:
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
-            contract-name: yield-router
+            contract-name: tokenizer-v2
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            cost: 38110
+            cost: 39370
+            path: contracts/tokenizer-v2.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: yield-router-v2
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 52540
             path: contracts/yield-router.clar
             anchor-block-only: true
             clarity-version: 1
