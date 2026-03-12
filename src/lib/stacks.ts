@@ -220,6 +220,36 @@ export function addLiquidity(
 }
 
 /**
+ * Admin: Simulate Zest Protocol yield by manually accruing sBTC into the Yield Router
+ */
+export function accrueYield(
+  sbtcAmount: string,
+  onFinish: (data: FinishedTxData) => void,
+  onCancel?: () => void,
+) {
+  const microSbtc = toMicroUnits(sbtcAmount);
+  if (microSbtc <= 0) throw new Error("Amount must be greater than 0");
+
+  const postConditions = [
+    Pc.principal(DEPLOYER)
+      .willSendEq(microSbtc)
+      .ft(`${DEPLOYER}.sbtc-token`, "sbtc"),
+  ];
+
+  openContractCall({
+    contractAddress: DEPLOYER,
+    contractName: "yield-router-v2",
+    functionName: "accrue-yield",
+    functionArgs: [uintCV(microSbtc)],
+    postConditionMode: PostConditionMode.Deny,
+    postConditions,
+    network: NETWORK as "testnet" | "mainnet",
+    onFinish,
+    onCancel: onCancel || (() => {}),
+  });
+}
+
+/**
  * Polls the Stacks API until a transaction is confirmed or aborted.
  */
 export async function waitForTransaction(txId: string): Promise<"success" | "failed"> {

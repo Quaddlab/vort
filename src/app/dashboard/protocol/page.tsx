@@ -15,7 +15,12 @@ import { useToast } from "@/context/ToastContext";
 import { useBalances } from "@/hooks/useBalances";
 import { useZestApy } from "@/hooks/useZestApy";
 import { useEpoch } from "@/hooks/useEpoch";
-import { formatBalance, addLiquidity, waitForTransaction } from "@/lib/stacks";
+import {
+  formatBalance,
+  addLiquidity,
+  accrueYield,
+  waitForTransaction,
+} from "@/lib/stacks";
 
 const DEPLOYER = process.env.NEXT_PUBLIC_CONTRACT_DEPLOYER || "ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44";
 
@@ -26,6 +31,7 @@ export default function ProtocolPage() {
   const epoch = useEpoch();
   const zest = useZestApy();
   const [seedState, setSeedState] = useState<"idle" | "pending" | "submitted">("idle");
+  const [yieldState, setYieldState] = useState<"idle" | "pending" | "submitted">("idle");
 
   const isDeployer = address === DEPLOYER;
 
@@ -246,6 +252,52 @@ export default function ProtocolPage() {
               <><Loader2 size={16} className="animate-spin" /> Awaiting confirmation...</>
             ) : (
               "Seed 1 sBTC + 1 PT into AMM Pool"
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Admin: Simulate Yield */}
+      {isDeployer && (
+        <div className="bg-[#0a0a0c] border border-indigo-500/20 p-6 rounded-2xl mt-6">
+          <h3 className="text-indigo-400 font-medium mb-3 flex items-center gap-2">
+            <ShieldCheck size={16} /> Admin: Simulate Zest Yield
+          </h3>
+          <p className="text-slate-400 text-sm mb-4">
+            Push 0.5 sBTC into the yield router. This simulates Zest Protocol paying out returns and unlocks the &quot;Claim Yield&quot; button for users.
+          </p>
+          <button
+            onClick={() => {
+              setYieldState("pending");
+              accrueYield(
+                "0.5",
+                async (data) => {
+                  setYieldState("submitted");
+                  addToast("info", "Accruing yield...", "Awaiting confirmation...", data.txId);
+                  const status = await waitForTransaction(data.txId);
+                  if (status === "success") {
+                    setYieldState("idle");
+                    addToast("success", "Yield accrued!", "Users can now claim their yield.", data.txId);
+                  } else {
+                    setYieldState("idle");
+                    addToast("error", "Accrual failed", "Transaction aborted on-chain.", data.txId);
+                  }
+                },
+                () => {
+                  setYieldState("idle");
+                  addToast("info", "Cancelled", "You cancelled the wallet signing.");
+                },
+              );
+            }}
+            disabled={yieldState !== "idle"}
+            className="bg-indigo-500 hover:bg-indigo-400 text-white px-6 py-3 rounded-lg font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {yieldState === "pending" ? (
+              <><Loader2 size={16} className="animate-spin" /> Waiting for wallet...</>
+            ) : yieldState === "submitted" ? (
+              <><Loader2 size={16} className="animate-spin" /> Awaiting confirmation...</>
+            ) : (
+              "Simulate Zest Yield (0.5 sBTC)"
             )}
           </button>
         </div>
