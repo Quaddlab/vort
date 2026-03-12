@@ -12,8 +12,12 @@ export const PUBLIC_CONFIG = {
   contractDeployer:
     process.env.NEXT_PUBLIC_CONTRACT_DEPLOYER ||
     "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM",
-  tokenizerContract: process.env.NEXT_PUBLIC_TOKENIZER_CONTRACT || "tokenizer-v2",
-  ptAmmContract: process.env.NEXT_PUBLIC_PT_AMM_CONTRACT || "pt-amm-v2",
+  tokenizerContract: process.env.NEXT_PUBLIC_TOKENIZER_CONTRACT || "tokenizer-v3",
+  ptAmmContract: process.env.NEXT_PUBLIC_PT_AMM_CONTRACT || "pt-amm-v3",
+  yieldRouterContract: process.env.NEXT_PUBLIC_YIELD_ROUTER_CONTRACT || "yield-router-v3",
+  // The real Stacks testnet sBTC contract
+  sbtcContract: process.env.NEXT_PUBLIC_SBTC_CONTRACT || "ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT.sbtc-token",
+  sbtcAssetName: "sbtc",
 } as const;
 
 // --- Server-Only Secrets ---

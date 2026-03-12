@@ -2,15 +2,16 @@
  * Client-side Stacks contract interaction helpers.
  * Uses @stacks/transactions to build and broadcast contract calls
  * through the user's connected Leather/Xverse wallet.
+ *
+ * V3: All contracts now use the real testnet sBTC at
+ *     ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT.sbtc-token
  */
 
 import { openContractCall, type FinishedTxData } from "@stacks/connect";
 import {
   uintCV,
-  principalCV,
   PostConditionMode,
   Pc,
-  FungibleConditionCode,
 } from "@stacks/transactions";
 import { PUBLIC_CONFIG } from "./env";
 
@@ -19,6 +20,10 @@ const DEPLOYER =
   "ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44";
 
 const NETWORK = process.env.NEXT_PUBLIC_NETWORK || "testnet";
+
+// Real testnet sBTC contract
+const SBTC_CONTRACT = "ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT.sbtc-token" as const;
+const SBTC_ASSET = "sbtc" as const;
 
 // 8 decimals for sBTC/PT/YT tokens
 const DECIMALS = 8;
@@ -58,7 +63,7 @@ export function depositSbtc(
 
   openContractCall({
     contractAddress: DEPLOYER,
-    contractName: "tokenizer-v2",
+    contractName: PUBLIC_CONFIG.tokenizerContract,
     functionName: "deposit",
     functionArgs: [uintCV(microAmount)],
     postConditionMode: PostConditionMode.Allow,
@@ -81,7 +86,7 @@ export function redeemTokens(
 
   openContractCall({
     contractAddress: DEPLOYER,
-    contractName: "tokenizer-v2",
+    contractName: PUBLIC_CONFIG.tokenizerContract,
     functionName: "redeem",
     functionArgs: [uintCV(microAmount)],
     postConditionMode: PostConditionMode.Allow,
@@ -100,7 +105,7 @@ export function claimYield(
 ) {
   openContractCall({
     contractAddress: DEPLOYER,
-    contractName: "yield-router-v2",
+    contractName: PUBLIC_CONFIG.yieldRouterContract,
     functionName: "claim-yield",
     functionArgs: [],
     postConditionMode: PostConditionMode.Allow,
@@ -159,33 +164,7 @@ export function swapPtForSbtc(
 }
 
 /**
- * Mint test sBTC for testing purposes (testnet only).
- */
-export function mintTestSbtc(
-  amount: string,
-  recipient: string,
-  onFinish: (data: FinishedTxData) => void,
-  onCancel?: () => void,
-) {
-  const microAmount = toMicroUnits(amount);
-  if (microAmount <= 0) throw new Error("Amount must be greater than 0");
-
-  openContractCall({
-    contractAddress: DEPLOYER,
-    contractName: "sbtc-token",
-    functionName: "mint-for-testing",
-    functionArgs: [uintCV(microAmount), principalCV(recipient)],
-    postConditionMode: PostConditionMode.Allow,
-    network: NETWORK as "testnet" | "mainnet",
-    onFinish,
-    onCancel: onCancel || (() => {}),
-  });
-}
-
-/**
  * Admin: Add initial liquidity to the PT AMM pool.
- * This uses PostConditionMode.Deny with explicit fungible post conditions
- * for both sBTC and PT tokens, which the Hiro Sandbox UI cannot do.
  */
 export function addLiquidity(
   sbtcAmount: string,
@@ -200,7 +179,7 @@ export function addLiquidity(
   const postConditions = [
     Pc.principal(DEPLOYER)
       .willSendEq(microSbtc)
-      .ft(`${DEPLOYER}.sbtc-token`, "sbtc"),
+      .ft(SBTC_CONTRACT, SBTC_ASSET),
     Pc.principal(DEPLOYER)
       .willSendEq(microPt)
       .ft(`${DEPLOYER}.pt-token`, "principal-token"),
@@ -220,7 +199,8 @@ export function addLiquidity(
 }
 
 /**
- * Admin: Simulate Zest Protocol yield by manually accruing sBTC into the Yield Router
+ * Admin: Simulate Zest Protocol yield by accruing sBTC into the Yield Router.
+ * The v3 contract pulls sBTC from the caller into the contract first.
  */
 export function accrueYield(
   sbtcAmount: string,
@@ -233,12 +213,12 @@ export function accrueYield(
   const postConditions = [
     Pc.principal(DEPLOYER)
       .willSendEq(microSbtc)
-      .ft(`${DEPLOYER}.sbtc-token`, "sbtc"),
+      .ft(SBTC_CONTRACT, SBTC_ASSET),
   ];
 
   openContractCall({
     contractAddress: DEPLOYER,
-    contractName: "yield-router-v2",
+    contractName: PUBLIC_CONFIG.yieldRouterContract,
     functionName: "accrue-yield",
     functionArgs: [uintCV(microSbtc)],
     postConditionMode: PostConditionMode.Deny,
@@ -269,4 +249,3 @@ export async function waitForTransaction(txId: string): Promise<"success" | "fai
     await new Promise((resolve) => setTimeout(resolve, 5000));
   }
 }
-

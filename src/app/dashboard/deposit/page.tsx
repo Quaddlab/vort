@@ -18,7 +18,6 @@ import {
   depositSbtc,
   formatBalance,
   toMicroUnits,
-  mintTestSbtc,
   waitForTransaction,
 } from "@/lib/stacks";
 
@@ -76,39 +75,7 @@ export default function DepositPage() {
     );
   }
 
-  function handleMintTestSbtc() {
-    if (!address) return;
-    setTxState("pending");
 
-    mintTestSbtc(
-      "1",
-      address,
-      async (data) => {
-        setTxId(data.txId);
-        setTxState("submitted");
-        addToast(
-          "info",
-          "Minting...",
-          "Minting test sBTC. Awaiting confirmation...",
-          data.txId,
-        );
-        
-        const status = await waitForTransaction(data.txId);
-        if (status === "success") {
-          setTxState("success");
-          addToast("success", "sBTC Minted!", "1 test sBTC is now in your wallet.", data.txId);
-          refetch();
-        } else {
-          setTxState("error");
-          addToast("error", "Mint failed", "Failed to mint sBTC.", data.txId);
-        }
-      },
-      () => {
-        setTxState("idle");
-        addToast("info", "Mint cancelled", "You cancelled the wallet signing.");
-      },
-    );
-  }
 
   function handleMax() {
     if (sbtcBalance > 0) {
@@ -133,32 +100,27 @@ export default function DepositPage() {
         </div>
       </div>
 
-      {/* Testnet Faucet — always visible */}
+      {/* Testnet sBTC Faucet — link to Hiro Explorer */}
       <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <p className="text-amber-400 font-medium text-sm mb-1">
-            Testnet sBTC Faucet
+            Get Testnet sBTC
           </p>
           <p className="text-slate-400 text-sm">
-            Mint free test sBTC to your wallet. You can use it to deposit, swap, or seed the AMM pool.
+            Get real testnet sBTC from the Hiro Faucet. Use it to deposit, swap, or provide liquidity.
             <span className="text-slate-500 ml-1">
               Balance: {loading ? "..." : formatBalance(sbtcBalance)} sBTC
             </span>
           </p>
         </div>
-        <button
-          onClick={handleMintTestSbtc}
-          disabled={txState === "pending" || txState === "submitted"}
-          className="bg-amber-500 hover:bg-amber-400 text-black px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-2"
+        <a
+          href="https://explorer.hiro.so/sandbox/faucet?chain=testnet"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-amber-500 hover:bg-amber-400 text-black px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer shrink-0 flex items-center gap-2"
         >
-          {txState === "pending" ? (
-            <><Loader2 size={14} className="animate-spin" /> Waiting for wallet...</>
-          ) : txState === "submitted" ? (
-            <><Loader2 size={14} className="animate-spin" /> Minting...</>
-          ) : (
-            "Mint 1 Test sBTC"
-          )}
-        </button>
+          Open Hiro Faucet ↗
+        </a>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

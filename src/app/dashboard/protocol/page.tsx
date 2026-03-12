@@ -181,12 +181,12 @@ export default function ProtocolPage() {
           <h3 className="text-white font-medium mb-6">Deployed Contracts</h3>
           <div className="flex-1 space-y-4">
             {[
-              { name: "tokenizer-v2", desc: "Deposit & Redeem" },
+              { name: "tokenizer-v3", desc: "Deposit & Redeem" },
               { name: "pt-token", desc: "Principal Token" },
               { name: "yt-token", desc: "Yield Token" },
-              { name: "pt-amm-v2", desc: "AMM Pool" },
-              { name: "yield-router-v2", desc: "Yield Distribution" },
-              { name: "sbtc-token", desc: "Test sBTC" },
+              { name: "pt-amm-v3", desc: "AMM Pool" },
+              { name: "yield-router-v3", desc: "Yield Distribution" },
+              { name: "mock-zest-vault-v2", desc: "Zest Vault (Mock)" },
             ].map((c, i) => (
               <a
                 key={i}
@@ -216,7 +216,7 @@ export default function ProtocolPage() {
             <ShieldCheck size={16} /> Admin: Seed AMM Pool
           </h3>
           <p className="text-slate-400 text-sm mb-4">
-            Add 1 sBTC + 1 PT of initial liquidity to the pt-amm-v2 pool so users can trade.
+            Add 1 sBTC + 1 PT of initial liquidity to the pt-amm-v3 pool so users can trade.
             This uses programmatic post conditions (bypasses Sandbox UI limitation).
           </p>
           <button
