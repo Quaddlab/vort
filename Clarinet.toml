@@ -41,6 +41,10 @@ depends_on = ["sbtc-token", "yt-token", "mock-zest-vault"]
 path = "contracts/pt-amm.clar"
 depends_on = ["sbtc-token", "pt-token"]
 
+[contracts.pt-amm-v2]
+path = "contracts/pt-amm-v2.clar"
+depends_on = ["sbtc-token", "pt-token"]
+
 [repl.analysis]
 passes = ["check_checker"]
 
