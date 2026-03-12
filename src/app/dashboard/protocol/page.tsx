@@ -7,18 +7,27 @@ import {
   Clock,
   LineChart,
   ShieldCheck,
+  Loader2,
 } from "lucide-react";
+import { useState } from "react";
 import { useWallet } from "@/context/WalletContext";
+import { useToast } from "@/context/ToastContext";
 import { useBalances } from "@/hooks/useBalances";
 import { useZestApy } from "@/hooks/useZestApy";
 import { useEpoch } from "@/hooks/useEpoch";
-import { formatBalance } from "@/lib/stacks";
+import { formatBalance, addLiquidity, waitForTransaction } from "@/lib/stacks";
+
+const DEPLOYER = process.env.NEXT_PUBLIC_CONTRACT_DEPLOYER || "ST3SJNP6KGJVT5ZBS1Q7T8RQVMFAZ16W80ZST1W44";
 
 export default function ProtocolPage() {
   const { address } = useWallet();
+  const { addToast } = useToast();
   const { balances, loading } = useBalances(address);
   const epoch = useEpoch();
   const zest = useZestApy();
+  const [seedState, setSeedState] = useState<"idle" | "pending" | "submitted">("idle");
+
+  const isDeployer = address === DEPLOYER;
 
   const ptBalance = balances?.pt ?? 0;
   const ytBalance = balances?.yt ?? 0;
@@ -193,6 +202,54 @@ export default function ProtocolPage() {
           </div>
         </div>
       </div>
+
+      {/* Admin: Seed AMM Pool */}
+      {isDeployer && (
+        <div className="bg-[#0a0a0c] border border-amber-500/20 p-6 rounded-2xl">
+          <h3 className="text-amber-400 font-medium mb-3 flex items-center gap-2">
+            <ShieldCheck size={16} /> Admin: Seed AMM Pool
+          </h3>
+          <p className="text-slate-400 text-sm mb-4">
+            Add 1 sBTC + 1 PT of initial liquidity to the pt-amm pool so users can trade.
+            This uses programmatic post conditions (bypasses Sandbox UI limitation).
+          </p>
+          <button
+            onClick={() => {
+              setSeedState("pending");
+              addLiquidity(
+                "1",
+                "1",
+                async (data) => {
+                  setSeedState("submitted");
+                  addToast("info", "Seeding pool...", "Awaiting confirmation...", data.txId);
+                  const status = await waitForTransaction(data.txId);
+                  if (status === "success") {
+                    setSeedState("idle");
+                    addToast("success", "Pool seeded!", "The AMM pool is now open for trading.", data.txId);
+                  } else {
+                    setSeedState("idle");
+                    addToast("error", "Seeding failed", "Transaction aborted on-chain.", data.txId);
+                  }
+                },
+                () => {
+                  setSeedState("idle");
+                  addToast("info", "Cancelled", "You cancelled the wallet signing.");
+                },
+              );
+            }}
+            disabled={seedState !== "idle"}
+            className="bg-amber-500 hover:bg-amber-400 text-black px-6 py-3 rounded-lg font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {seedState === "pending" ? (
+              <><Loader2 size={16} className="animate-spin" /> Waiting for wallet...</>
+            ) : seedState === "submitted" ? (
+              <><Loader2 size={16} className="animate-spin" /> Awaiting confirmation...</>
+            ) : (
+              "Seed 1 sBTC + 1 PT into AMM Pool"
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

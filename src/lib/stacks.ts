@@ -5,7 +5,13 @@
  */
 
 import { openContractCall, type FinishedTxData } from "@stacks/connect";
-import { uintCV, principalCV, PostConditionMode } from "@stacks/transactions";
+import {
+  uintCV,
+  principalCV,
+  PostConditionMode,
+  Pc,
+  FungibleConditionCode,
+} from "@stacks/transactions";
 
 const DEPLOYER =
   process.env.NEXT_PUBLIC_CONTRACT_DEPLOYER ||
@@ -169,6 +175,43 @@ export function mintTestSbtc(
     functionName: "mint-for-testing",
     functionArgs: [uintCV(microAmount), principalCV(recipient)],
     postConditionMode: PostConditionMode.Allow,
+    network: NETWORK as "testnet" | "mainnet",
+    onFinish,
+    onCancel: onCancel || (() => {}),
+  });
+}
+
+/**
+ * Admin: Add initial liquidity to the PT AMM pool.
+ * This uses PostConditionMode.Deny with explicit fungible post conditions
+ * for both sBTC and PT tokens, which the Hiro Sandbox UI cannot do.
+ */
+export function addLiquidity(
+  sbtcAmount: string,
+  ptAmount: string,
+  onFinish: (data: FinishedTxData) => void,
+  onCancel?: () => void,
+) {
+  const microSbtc = toMicroUnits(sbtcAmount);
+  const microPt = toMicroUnits(ptAmount);
+  if (microSbtc <= 0 || microPt <= 0) throw new Error("Amounts must be greater than 0");
+
+  const postConditions = [
+    Pc.principal(DEPLOYER)
+      .willSendEq(microSbtc)
+      .ft(`${DEPLOYER}.sbtc-token`, "sbtc"),
+    Pc.principal(DEPLOYER)
+      .willSendEq(microPt)
+      .ft(`${DEPLOYER}.pt-token`, "principal-token"),
+  ];
+
+  openContractCall({
+    contractAddress: DEPLOYER,
+    contractName: "pt-amm",
+    functionName: "add-liquidity",
+    functionArgs: [uintCV(microSbtc), uintCV(microPt)],
+    postConditionMode: PostConditionMode.Deny,
+    postConditions,
     network: NETWORK as "testnet" | "mainnet",
     onFinish,
     onCancel: onCancel || (() => {}),
