@@ -12,6 +12,7 @@ import {
   Pc,
   FungibleConditionCode,
 } from "@stacks/transactions";
+import { PUBLIC_CONFIG } from "./env";
 
 const DEPLOYER =
   process.env.NEXT_PUBLIC_CONTRACT_DEPLOYER ||
@@ -123,7 +124,7 @@ export function swapSbtcForPt(
 
   openContractCall({
     contractAddress: DEPLOYER,
-    contractName: "pt-amm",
+    contractName: PUBLIC_CONFIG.ptAmmContract,
     functionName: "swap-sbtc-for-pt",
     functionArgs: [uintCV(microAmount), uintCV(minPtOut)],
     postConditionMode: PostConditionMode.Allow,
@@ -147,7 +148,7 @@ export function swapPtForSbtc(
 
   openContractCall({
     contractAddress: DEPLOYER,
-    contractName: "pt-amm",
+    contractName: PUBLIC_CONFIG.ptAmmContract,
     functionName: "swap-pt-for-sbtc",
     functionArgs: [uintCV(microAmount), uintCV(minSbtcOut)],
     postConditionMode: PostConditionMode.Allow,
@@ -207,7 +208,7 @@ export function addLiquidity(
 
   openContractCall({
     contractAddress: DEPLOYER,
-    contractName: "pt-amm",
+    contractName: PUBLIC_CONFIG.ptAmmContract,
     functionName: "add-liquidity",
     functionArgs: [uintCV(microSbtc), uintCV(microPt)],
     postConditionMode: PostConditionMode.Deny,

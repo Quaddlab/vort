@@ -43,9 +43,10 @@
     (sbtc-reserve (var-get pool-sbtc))
     (pt-reserve (var-get pool-pt))
     (k (* sbtc-reserve pt-reserve))
-    (new-sbtc-reserve (+ sbtc-reserve sbtc-after-fee))
+    (new-sbtc-reserve (+ sbtc-reserve sbtc-after-fee)) ;; Calculate new sbtc reserve after user deposit
     (new-pt-reserve (/ k new-sbtc-reserve))
     (pt-out (- pt-reserve new-pt-reserve))
+    (sender tx-sender) ;; Save original tx-sender
   )
     (asserts! (> sbtc-in u0) ERR-INVALID-AMOUNT)
     (asserts! (> pt-reserve u0) ERR-POOL-EMPTY)
@@ -53,10 +54,10 @@
     (asserts! (> pt-out u0) ERR-INSUFFICIENT-LIQUIDITY)
 
     ;; Transfer sBTC from user to pool
-    (try! (contract-call? .sbtc-token transfer sbtc-in tx-sender (as-contract tx-sender) none))
+    (try! (contract-call? .sbtc-token transfer sbtc-in sender (as-contract tx-sender) none))
 
     ;; Transfer PT from pool to user
-    (try! (as-contract (contract-call? .pt-token transfer pt-out tx-sender tx-sender none)))
+    (try! (as-contract (contract-call? .pt-token transfer pt-out tx-sender sender none)))
 
     ;; Update reserves
     (var-set pool-sbtc new-sbtc-reserve)
@@ -75,9 +76,10 @@
     (sbtc-reserve (var-get pool-sbtc))
     (pt-reserve (var-get pool-pt))
     (k (* sbtc-reserve pt-reserve))
-    (new-pt-reserve (+ pt-reserve pt-after-fee))
+    (new-pt-reserve (+ pt-reserve pt-after-fee)) ;; Calculate new pt reserve after user deposit
     (new-sbtc-reserve (/ k new-pt-reserve))
     (sbtc-out (- sbtc-reserve new-sbtc-reserve))
+    (sender tx-sender) ;; Save original tx-sender
   )
     (asserts! (> pt-in u0) ERR-INVALID-AMOUNT)
     (asserts! (> sbtc-reserve u0) ERR-POOL-EMPTY)
@@ -85,10 +87,10 @@
     (asserts! (> sbtc-out u0) ERR-INSUFFICIENT-LIQUIDITY)
 
     ;; Transfer PT from user to pool
-    (try! (contract-call? .pt-token transfer pt-in tx-sender (as-contract tx-sender) none))
+    (try! (contract-call? .pt-token transfer pt-in sender (as-contract tx-sender) none))
 
     ;; Transfer sBTC from pool to user
-    (try! (as-contract (contract-call? .sbtc-token transfer sbtc-out tx-sender tx-sender none)))
+    (try! (as-contract (contract-call? .sbtc-token transfer sbtc-out tx-sender sender none)))
 
     ;; Update reserves
     (var-set pool-sbtc new-sbtc-reserve)
@@ -106,8 +108,12 @@
     (asserts! (> sbtc-amount u0) ERR-INVALID-AMOUNT)
     (asserts! (> pt-amount u0) ERR-INVALID-AMOUNT)
 
-    (try! (contract-call? .sbtc-token transfer sbtc-amount tx-sender (as-contract tx-sender) none))
-    (try! (contract-call? .pt-token transfer pt-amount tx-sender (as-contract tx-sender) none))
+    (let (
+      (sender tx-sender) ;; Save original tx-sender
+    )
+      (try! (contract-call? .sbtc-token transfer sbtc-amount sender (as-contract tx-sender) none))
+      (try! (contract-call? .pt-token transfer pt-amount sender (as-contract tx-sender) none))
+    )
 
     (var-set pool-sbtc (+ (var-get pool-sbtc) sbtc-amount))
     (var-set pool-pt (+ (var-get pool-pt) pt-amount))

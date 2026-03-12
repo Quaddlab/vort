@@ -178,7 +178,7 @@ export default function ProtocolPage() {
               { name: "tokenizer-v2", desc: "Deposit & Redeem" },
               { name: "pt-token", desc: "Principal Token" },
               { name: "yt-token", desc: "Yield Token" },
-              { name: "pt-amm", desc: "AMM Pool" },
+              { name: "pt-amm-v2", desc: "AMM Pool" },
               { name: "yield-router-v2", desc: "Yield Distribution" },
               { name: "sbtc-token", desc: "Test sBTC" },
             ].map((c, i) => (
@@ -210,7 +210,7 @@ export default function ProtocolPage() {
             <ShieldCheck size={16} /> Admin: Seed AMM Pool
           </h3>
           <p className="text-slate-400 text-sm mb-4">
-            Add 1 sBTC + 1 PT of initial liquidity to the pt-amm pool so users can trade.
+            Add 1 sBTC + 1 PT of initial liquidity to the pt-amm-v2 pool so users can trade.
             This uses programmatic post conditions (bypasses Sandbox UI limitation).
           </p>
           <button
