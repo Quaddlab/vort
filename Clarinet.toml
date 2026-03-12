@@ -7,33 +7,9 @@ cache_dir = '.cache'
 
 [[project.requirements]]
 contract_id = 'ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT.sbtc-token'
-[contracts.mock-zest-vault]
-path = 'contracts/mock-zest-vault.clar'
-clarity_version = 1
-epoch = '2.05'
 
-[contracts.mock-zest-vault-v2]
-path = 'contracts/mock-zest-vault-v2.clar'
-clarity_version = 1
-epoch = '2.05'
-
-[contracts.pt-amm]
-path = 'contracts/pt-amm.clar'
-clarity_version = 1
-epoch = '2.05'
-
-[contracts.pt-amm-v2]
-path = 'contracts/pt-amm-v2.clar'
-clarity_version = 1
-epoch = '2.05'
-
-[contracts.pt-amm-v3]
-path = 'contracts/pt-amm-v3.clar'
-clarity_version = 1
-epoch = '2.05'
-
-[contracts.pt-token]
-path = 'contracts/pt-token.clar'
+[contracts.sip-010-trait]
+path = 'contracts/traits/sip-010-trait.clar'
 clarity_version = 1
 epoch = '2.05'
 
@@ -42,8 +18,18 @@ path = 'contracts/sbtc-token.clar'
 clarity_version = 1
 epoch = '2.05'
 
-[contracts.sip-010-trait]
-path = 'contracts/traits/sip-010-trait.clar'
+[contracts.pt-token]
+path = 'contracts/pt-token.clar'
+clarity_version = 1
+epoch = '2.05'
+
+[contracts.yt-token]
+path = 'contracts/yt-token.clar'
+clarity_version = 1
+epoch = '2.05'
+
+[contracts.mock-zest-vault]
+path = 'contracts/mock-zest-vault.clar'
 clarity_version = 1
 epoch = '2.05'
 
@@ -57,8 +43,13 @@ path = 'contracts/tokenizer-v2.clar'
 clarity_version = 1
 epoch = '2.05'
 
-[contracts.tokenizer-v3]
-path = 'contracts/tokenizer-v3.clar'
+[contracts.pt-amm]
+path = 'contracts/pt-amm.clar'
+clarity_version = 1
+epoch = '2.05'
+
+[contracts.pt-amm-v2]
+path = 'contracts/pt-amm-v2.clar'
 clarity_version = 1
 epoch = '2.05'
 
@@ -67,15 +58,26 @@ path = 'contracts/yield-router.clar'
 clarity_version = 1
 epoch = '2.05'
 
+[contracts.tokenizer-v3]
+path = 'contracts/tokenizer-v3.clar'
+clarity_version = 1
+epoch = '2.05'
+
+[contracts.pt-amm-v3]
+path = 'contracts/pt-amm-v3.clar'
+clarity_version = 1
+epoch = '2.05'
+
 [contracts.yield-router-v3]
 path = 'contracts/yield-router-v3.clar'
 clarity_version = 1
 epoch = '2.05'
 
-[contracts.yt-token]
-path = 'contracts/yt-token.clar'
+[contracts.mock-zest-vault-v2]
+path = 'contracts/mock-zest-vault-v2.clar'
 clarity_version = 1
 epoch = '2.05'
+
 [repl.analysis]
 passes = ['check_checker']
 
