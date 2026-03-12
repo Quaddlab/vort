@@ -30,6 +30,13 @@ plan:
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
+            contract-name: mock-zest-vault-v2
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 39180
+            path: contracts/mock-zest-vault-v2.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
             contract-name: pt-token
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 17730
@@ -48,6 +55,13 @@ plan:
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 46120
             path: contracts/pt-amm-v2.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: pt-amm-v3
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 45160
+            path: contracts/pt-amm-v3.clar
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
@@ -72,10 +86,24 @@ plan:
             anchor-block-only: true
             clarity-version: 1
         - contract-publish:
+            contract-name: tokenizer-v3
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 39910
+            path: contracts/tokenizer-v3.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
             contract-name: yield-router-v2
             expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             cost: 52540
             path: contracts/yield-router.clar
+            anchor-block-only: true
+            clarity-version: 1
+        - contract-publish:
+            contract-name: yield-router-v3
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 48770
+            path: contracts/yield-router-v3.clar
             anchor-block-only: true
             clarity-version: 1
       epoch: "2.05"
