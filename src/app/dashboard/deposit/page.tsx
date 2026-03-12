@@ -133,27 +133,33 @@ export default function DepositPage() {
         </div>
       </div>
 
-      {/* Mint test sBTC banner if balance is 0 */}
-      {!loading && sbtcBalance === 0 && (
-        <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <p className="text-amber-400 font-medium text-sm mb-1">
-              No sBTC Balance
-            </p>
-            <p className="text-slate-400 text-sm">
-              You need test sBTC to make a deposit. Mint some to your wallet to
-              get started.
-            </p>
-          </div>
-          <button
-            onClick={handleMintTestSbtc}
-            disabled={txState === "pending"}
-            className="bg-amber-500 hover:bg-amber-400 text-black px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer shrink-0 disabled:opacity-50"
-          >
-            {txState === "pending" ? "Minting..." : "Mint 1 Test sBTC"}
-          </button>
+      {/* Testnet Faucet — always visible */}
+      <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <p className="text-amber-400 font-medium text-sm mb-1">
+            Testnet sBTC Faucet
+          </p>
+          <p className="text-slate-400 text-sm">
+            Mint free test sBTC to your wallet. You can use it to deposit, swap, or seed the AMM pool.
+            <span className="text-slate-500 ml-1">
+              Balance: {loading ? "..." : formatBalance(sbtcBalance)} sBTC
+            </span>
+          </p>
         </div>
-      )}
+        <button
+          onClick={handleMintTestSbtc}
+          disabled={txState === "pending" || txState === "submitted"}
+          className="bg-amber-500 hover:bg-amber-400 text-black px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-2"
+        >
+          {txState === "pending" ? (
+            <><Loader2 size={14} className="animate-spin" /> Waiting for wallet...</>
+          ) : txState === "submitted" ? (
+            <><Loader2 size={14} className="animate-spin" /> Minting...</>
+          ) : (
+            "Mint 1 Test sBTC"
+          )}
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left Column: Deposit Setup */}
