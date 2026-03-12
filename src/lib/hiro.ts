@@ -48,7 +48,7 @@ export async function getUserBalances(address: string): Promise<TokenBalances> {
   }
 
   const env = getServerEnv();
-  const url = `${env.hiroApiUrl}/extended/v2/addresses/${address}/balances`;
+  const url = `${env.hiroApiUrl}/extended/v1/address/${address}/balances`;
 
   const response = await fetch(url, {
     method: "GET",
