@@ -39,8 +39,8 @@ export default function MarketPage() {
   const payBalance = direction === "sbtc-to-pt" ? sbtcBalance : ptBalance;
   const receiveBalance = direction === "sbtc-to-pt" ? ptBalance : sbtcBalance;
 
-  // PT trades at ~0.985 sBTC (slight discount)
-  const exchangeRate = direction === "sbtc-to-pt" ? 1.015 : 0.985;
+  // Estimate output at ~1:1 ratio (AMM will determine actual rate)
+  const exchangeRate = direction === "sbtc-to-pt" ? 0.99 : 0.99;
   const receiveAmount =
     Number(payAmount) > 0
       ? (Number(payAmount) * exchangeRate).toFixed(4)
@@ -54,7 +54,8 @@ export default function MarketPage() {
     if (!isValidAmount) return;
     setTxState("pending");
 
-    const minOut = Math.floor(toMicroUnits(receiveAmount) * 0.995); // 0.5% slippage
+    // Use 5% slippage tolerance for small pools — accept any output >= 95% of estimate
+    const minOut = Math.floor(toMicroUnits(receiveAmount) * 0.95);
 
     if (direction === "sbtc-to-pt") {
       swapSbtcForPt(
@@ -275,7 +276,7 @@ export default function MarketPage() {
             </div>
             <div className="flex justify-between items-center text-xs">
               <span className="text-slate-500">Slippage Tolerance</span>
-              <span className="text-slate-300 font-mono">0.5%</span>
+              <span className="text-slate-300 font-mono">5.0%</span>
             </div>
           </div>
 
