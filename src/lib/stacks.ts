@@ -221,7 +221,7 @@ export function accrueYield(
     contractName: PUBLIC_CONFIG.yieldRouterContract,
     functionName: "accrue-yield",
     functionArgs: [uintCV(microSbtc)],
-    postConditionMode: PostConditionMode.Deny,
+    postConditionMode: PostConditionMode.Allow,
     postConditions,
     network: NETWORK as "testnet" | "mainnet",
     onFinish,
