@@ -21,6 +21,7 @@ export default function PortfolioPage() {
 
   const ptBalance = balances?.pt ?? 0;
   const ytBalance = balances?.yt ?? 0;
+  const claimableYield = balances?.claimableYield ?? 0;
 
   function handleRedeem() {
     if (ptBalance <= 0) return;
@@ -212,19 +213,30 @@ export default function PortfolioPage() {
                 <p className="text-4xl font-mono text-white tracking-tight mb-1">
                   {loading ? "—" : formatBalance(ytBalance)}
                 </p>
-                <p className="text-slate-500 text-sm">
-                  Accruing yield from Zest Protocol
+                <p className="text-slate-500 text-sm flex flex-col gap-1 mt-2">
+                  <span>Accruing yield from Zest Protocol.</span>
+                  {ytBalance > 0 && !loading && (
+                    <span className="text-emerald-400 font-medium">
+                      ✓ {formatBalance(claimableYield)} sBTC available to claim
+                    </span>
+                  )}
                 </p>
               </div>
 
               <button
                 onClick={handleClaimYield}
-                disabled={ytBalance === 0 || txState === "pending"}
+                disabled={
+                  ytBalance === 0 || claimableYield <= 0 || txState === "pending"
+                }
                 className="w-full bg-[#111118] border border-[#1a1a24] text-slate-400 hover:text-white hover:border-indigo-500/30 py-3 rounded-xl text-sm font-medium cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
                 {txState === "pending"
                   ? "Waiting for wallet..."
-                  : "Claim Yield"}
+                  : ytBalance === 0
+                    ? "Deposit to Earn Yield"
+                    : claimableYield <= 0
+                      ? "No Yield Available"
+                      : `Claim ${formatBalance(claimableYield)} sBTC`}
               </button>
             </div>
           </div>

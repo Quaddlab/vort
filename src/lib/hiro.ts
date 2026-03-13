@@ -15,6 +15,7 @@
 import { getServerEnv } from "./env";
 import { validateStxAddress, safeLog } from "./security";
 import { PUBLIC_CONFIG } from "./env";
+import { principalCV, cvToHex, hexToCV, cvToValue } from "@stacks/transactions";
 
 // ============================================================
 //  Types
@@ -25,6 +26,7 @@ export interface TokenBalances {
   sbtc: number;
   pt: number;
   yt: number;
+  claimableYield: number;
 }
 
 interface HiroBalanceResponse {
@@ -73,11 +75,35 @@ export async function getUserBalances(address: string): Promise<TokenBalances> {
   const ptKey = findPtKey(tokens);
   const ytKey = findYtKey(tokens);
 
+  // Fetch true claimable yield via read-only call
+  let claimableYield = 0;
+  try {
+    const yieldResponse = await callReadOnly(
+      PUBLIC_CONFIG.yieldRouterContract,
+      "get-claimable-yield",
+      [cvToHex(principalCV(address))],
+      address
+    ) as { okay: boolean; result: string };
+
+    if (yieldResponse?.okay && yieldResponse.result) {
+      const cv = hexToCV(yieldResponse.result);
+      // get-claimable-yield returns a uint, so we parse it directly
+      const yieldMicroSbtc = Number(cvToValue(cv));
+      claimableYield = yieldMicroSbtc / 1e8;
+    }
+  } catch (err) {
+    safeLog("warn", "Failed to fetch claimable yield during balances update", {
+      address: `${address.slice(0, 6)}...`,
+      error: err instanceof Error ? err.message : "Unknown error",
+    });
+  }
+
   return {
     stx: parseBalance(data.stx?.balance),
     sbtc: parseBalance(sbtcKey ? tokens[sbtcKey]?.balance : undefined),
     pt: parseBalance(ptKey ? tokens[ptKey]?.balance : undefined),
     yt: parseBalance(ytKey ? tokens[ytKey]?.balance : undefined),
+    claimableYield,
   };
 }
 
