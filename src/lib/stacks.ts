@@ -23,7 +23,7 @@ const NETWORK = process.env.NEXT_PUBLIC_NETWORK || "testnet";
 
 // Real testnet sBTC contract
 const SBTC_CONTRACT = "ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT.sbtc-token" as const;
-const SBTC_ASSET = "sbtc" as const;
+const SBTC_ASSET = "sbtc-token" as const;
 
 // 8 decimals for sBTC/PT/YT tokens
 const DECIMALS = 8;
